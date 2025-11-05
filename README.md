@@ -62,12 +62,23 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 
 ### Purpose
 
-2-5 sentences describing what the system does
+PolyWatch is a web application that allows users to explore real-world prediction markets and organize them
+in a personal watchlist. The system retriveves market data from Polymarket with their external API and lets 
+the registered users save markets they want to follow, write personal notes and manage their selected markets. 
+The goal is not to trade but rather to track data from Polymarket in a structured way. 
 
 ### Pages
 
-* Home: 1-3 sentences describing what the page displays and what a user can do
-* Shopping cart: ...
+* Home (Markets)
+Displays a list of markets retrieved from the external API with search and filtering. A logged-in user
+can open a market's view or save it to their watchlist.
+
+* Watchlist
+Shows all markets that the user has added to their personal watchlist. From here the user can remove items,
+open the markets detail's, "CRUD" notes, sort markets by category and create personalized veiwable lists. 
+
+* Login / register
+Allows the user to create an account or log in to access personal features like their watchlist and notes.
 
 ### Entity-Relationship (ER) Diagram
 
