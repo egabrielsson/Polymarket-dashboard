@@ -8,8 +8,9 @@
   "description": "Template for ExpressJS API with Mongoose for Web and Mobile Engineering (DIT342)",
   "main": "./app.js",
   "scripts": {
-    "start": "node ./app.js",
-    "dev": "nodemon ./app.js",
+  "start": "node ./app.js",
+  "dev": "nodemon ./app.js",
+  "demo": "node ./mongoDBTester.js",
     "lint": "eslint .",
     "test": "cross-env-shell MONGODB_URI=mongodb://localhost:27017/serverTestDB \"npm run newman-server\"",
     "ci-test": "npm run newman-server",
@@ -26,6 +27,7 @@
     "body-parser": "^1.20.2",
     "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^4.19.2",
     "mongoose": "^8.5.4",
     "morgan": "^1.10.0"
