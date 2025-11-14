@@ -1,36 +1,41 @@
+// routes/deletionroute.js
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); 
+const User = require('../models/User');
 
-
-router.patch('/updateUsername', async (req, res) => {
+/**
+ * DELETE /api/users/:characterString
+ * Deletes the user identified by the 16-character characterString.
+ *
+ * Postman sample:
+ *   Method: DELETE
+ *   URL:    http://localhost:3000/api/users/A1B2C3D4E5F6G7H8
+ *   Headers:
+ *     Content-Type: application/json
+ *   Body: (none)
+ */
+router.delete('/users/:characterString', async (req, res) => {
   try {
-    const { characterString, newUsername } = req.body;
+    const { characterString } = req.params;
 
-    if (!characterString || !newUsername) {
-      return res.status(400).json({ message: 'characterString and newUsername are required' });
+    if (!characterString) {
+      return res.status(400).json({ message: '16 character string is required' });
     }
 
-    
-    const updatedUser = await User.findOneAndUpdate(
-      { characterString },                
-      { $set: { username: newUsername }}, 
-      { new: true }                       
-    );
+    const deletedUser = await User.findOneAndDelete({ characterString });
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User with this character string does not exist' });
     }
 
     return res.status(200).json({
-      message: 'Username updated successfully',
-      userId: updatedUser._id,
-      characterString: updatedUser.characterString,
-      username: updatedUser.username
+      message: 'Deletion successful',
+      userId: deletedUser._id,
+      characterString: deletedUser.characterString,
+      username: deletedUser.username
     });
-
   } catch (err) {
-    console.error('Error updating username:', err);
+    console.error('Error deleting user:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 });
