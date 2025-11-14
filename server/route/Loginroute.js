@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User'); 
 const bcrypt = require('bcryptjs');
 
-router.post('/Login', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -32,3 +32,5 @@ router.post('/Login', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+module.exports = router;
