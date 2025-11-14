@@ -1,25 +1,20 @@
-// routes/registration-routes.js
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const generateId = require('../generate-Id');
 const User = require('../models/User'); 
 
-
 router.post('/createAccount', async (req, res) => {
   try {
-    const {username} = req.body;
+    const { username } = req.body;
 
     if (!username) {
       return res.status(400).json({ message: 'Username is required' });
     }
 
-    const userId = generateId();
-
-    const userIdHash = await bcrypt.hash(userId, 10);
+    const characterString = generateId(); 
 
     const user = await User.create({
-      userIdHash,
+      characterString,
       username
     });
 
@@ -28,10 +23,16 @@ router.post('/createAccount', async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        characterString: user.characterString 
       }
     });
   } catch (err) {
     console.error('Error creating user:', err);
+
+    if (err.code === 11000) {
+      return res.status(409).json({ message: 'Generated ID already exists, please try again' });
+    }
+
     res.status(500).json({ message: 'Server error' });
   }
 });
