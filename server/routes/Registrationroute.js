@@ -1,8 +1,8 @@
 // routes/Registrationroute.js
 const express = require('express');
 const router = express.Router();
-const generateId = require('../IDcreation');
-const User = require('../models/User'); 
+const generateId = require('../IDcreation'); // ✅ match actual file name
+const User = require('../models/User');
 
 /**
  * POST /api/users
@@ -18,8 +18,6 @@ const User = require('../models/User');
  *       "username": "MyFirstUser"
  *     }
  */
-
-
 router.post('/users', async (req, res) => {
   try {
     const { username } = req.body;
@@ -28,29 +26,31 @@ router.post('/users', async (req, res) => {
       return res.status(400).json({ message: 'Username is required' });
     }
 
-    const characterString = generateId(); 
+    // Generate 16-char id
+    const characterString = generateId();
 
     const user = await User.create({
       characterString,
       username
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User created',
       user: {
         id: user._id,
         username: user.username,
-        characterString: user.characterString 
+        characterString: user.characterString
       }
     });
   } catch (err) {
     console.error('Error creating user:', err);
 
+    // Duplicate characterString
     if (err.code === 11000) {
       return res.status(409).json({ message: 'Generated ID already exists, please try again' });
     }
 
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

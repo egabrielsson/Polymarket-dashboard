@@ -1,49 +1,46 @@
-// routes/Usernameupdateroute.js
+// routes/Loginroute.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 
 /**
- * PATCH /api/users/:characterString
- * Updates the username of the user identified by the 16-character characterString.
+ * POST /api/sessions
+ * "Logs in" a user by verifying their 16-character characterString.
  *
  * Postman sample:
- *   Method: PATCH
- *   URL:    http://localhost:3000/api/users/A1B2C3D4E5F6G7H8
+ *   Method: POST
+ *   URL:    http://localhost:3000/api/sessions
  *   Headers:
  *     Content-Type: application/json
  *   Body (raw JSON):
  *     {
- *       "newUsername": "NewCoolName"
+ *       "characterString": "A1B2C3D4E5F6G7H8"
  *     }
  */
-router.patch('/users/:characterString', async (req, res) => {
+router.post('/sessions', async (req, res) => {
   try {
-    const { characterString } = req.params;
-    const { newUsername } = req.body;
+    const { characterString } = req.body;
 
-    if (!newUsername) {
-      return res.status(400).json({ message: 'newUsername is required' });
+    if (!characterString) {
+      return res.status(400).json({ message: '16 character string is required' });
     }
 
-    const updatedUser = await User.findOneAndUpdate(
-      { characterString },
-      { $set: { username: newUsername } },
-      { new: true }
-    );
+    // Find user by their 16-char ID
+    const user = await User.findOne({ characterString });
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ message: 'User with this character string does not exist' });
     }
 
+    // "Login" successful – you recognized the ID
     return res.status(200).json({
-      message: 'Username updated successfully',
-      userId: updatedUser._id,
-      characterString: updatedUser.characterString,
-      username: updatedUser.username
+      message: 'Login successful',
+      userId: user._id,
+      characterString: user.characterString,
+      username: user.username
     });
   } catch (err) {
-    console.error('Error updating username:', err);
+    console.error('Error logging in user:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 });
