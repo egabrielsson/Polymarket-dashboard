@@ -1,34 +1,50 @@
+// routes/Usernameupdateroute.js
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); 
+const User = require('../models/User');
 
-// POST /login
-router.post('/login', async (req, res) => {
+/**
+ * PATCH /api/users/:characterString
+ * Updates the username of the user identified by the 16-character characterString.
+ *
+ * Postman sample:
+ *   Method: PATCH
+ *   URL:    http://localhost:3000/api/users/A1B2C3D4E5F6G7H8
+ *   Headers:
+ *     Content-Type: application/json
+ *   Body (raw JSON):
+ *     {
+ *       "newUsername": "NewCoolName"
+ *     }
+ */
+router.patch('/users/:characterString', async (req, res) => {
   try {
-    const { characterString } = req.body;
+    const { characterString } = req.params;
+    const { newUsername } = req.body;
 
-    if (!characterString) {
-      return res.status(400).json({ message: '16 character string is required' });
+    if (!newUsername) {
+      return res.status(400).json({ message: 'newUsername is required' });
     }
 
-    // Find user by their 16-char ID
-    const user = await User.findOne({ characterString });
+    const updatedUser = await User.findOneAndUpdate(
+      { characterString },
+      { $set: { username: newUsername } },
+      { new: true }
+    );
 
-    if (!user) {
-      return res.status(404).json({ message: 'User with this character string does not exist' });
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // "Login" successful – you recognized the ID
     return res.status(200).json({
-      message: 'Login successful',
-      userId: user._id,
-      characterString: user.characterString,
-      username: user.username
+      message: 'Username updated successfully',
+      userId: updatedUser._id,
+      characterString: updatedUser.characterString,
+      username: updatedUser.username
     });
-
   } catch (err) {
-    console.error('Error logging in user:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error updating username:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

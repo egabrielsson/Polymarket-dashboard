@@ -1,9 +1,26 @@
+// routes/Registrationroute.js
 const express = require('express');
 const router = express.Router();
-const generateId = require('../generate-Id');
+const generateId = require('../IDcreation');
 const User = require('../models/User'); 
 
-router.post('/createAccount', async (req, res) => {
+/**
+ * POST /api/users
+ * Creates a new user with a generated 16-character characterString and a username.
+ *
+ * Postman sample:
+ *   Method: POST
+ *   URL:    http://localhost:3000/api/users
+ *   Headers:
+ *     Content-Type: application/json
+ *   Body (raw JSON):
+ *     {
+ *       "username": "MyFirstUser"
+ *     }
+ */
+
+
+router.post('/users', async (req, res) => {
   try {
     const { username } = req.body;
 
