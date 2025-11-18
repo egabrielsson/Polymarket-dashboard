@@ -42,8 +42,15 @@ app.get("/api", function (req, res) {
 });
 
 // Polymarket API routes
+// Provides endpoints to browse and search live markets from external Polymarket API
 const polymarketRoutes = require("./routes/polymarket");
 app.use("/api/polymarket", polymarketRoutes);
+
+// Market CRUD routes
+// Provides endpoints to create/store/manage local Market documents
+// Markets store references to external Polymarket markets via polymarketId
+const marketRoutes = require("./routes/market");
+app.use("/api/markets", marketRoutes);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use("/api/*", function (req, res) {
