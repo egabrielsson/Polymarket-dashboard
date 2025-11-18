@@ -33,10 +33,14 @@ app.use(cors());
 // Import routes
 app.use('/api', require('./routes/registration-routes'));
 
+// Health endpoint for CI
+app.get('/api', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 
-// Catch all non-error handler for api (i.e., 404 Not Found)
-app.use('/api/*', function (req, res) {
-    res.status(404).json({ 'message': 'Not Found' });
+// Catch-all for unknown API routes
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ message: 'Not Found' });
 });
 
 // Configuration for serving frontend in production mode
