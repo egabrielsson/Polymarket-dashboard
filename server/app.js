@@ -31,7 +31,7 @@ app.options('*', cors());
 app.use(cors());
 
 // Import routes
-app.use('/api', require('./routes/registrationroutes'));
+app.use('/api', require('./routes/registration-routes'));
 
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
