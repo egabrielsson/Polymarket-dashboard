@@ -32,6 +32,9 @@ app.use(cors());
 
 // Import routes
 app.use('/api', require('./routes/registration-routes'));
+app.use('/api', require('./routes/Deletionroute'));
+app.use('/api', require('./routes/Loginroute'));
+app.use('/api', require('./routes/Usernameupdateroute'));
 
 // Health endpoint for CI
 app.get('/api', (req, res) => {
