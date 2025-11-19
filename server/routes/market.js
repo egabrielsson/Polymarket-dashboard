@@ -7,6 +7,7 @@ const {
   createMarketHandler,
   listMarketsHandler,
   getMarketHandler,
+  updateMarketHandler,
 } = require("../controllers/marketController");
 
 const router = express.Router();
@@ -45,5 +46,10 @@ router.get("/", listMarketsHandler);
 // GET /api/markets/:id - get a single market by its MongoDB ID
 // Returns the full market object or 404 if not found
 router.get("/:id", getMarketHandler);
+
+// PUT /api/markets/:id - update a market's fields
+// Currently allows updating categoryId for organizing markets
+// users will create custom categories to organize their saved markets
+router.put("/:id", updateMarketHandler);
 
 module.exports = router;
