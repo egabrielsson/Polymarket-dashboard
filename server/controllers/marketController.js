@@ -3,7 +3,13 @@
 // Validates user input, calls service layer, and returns appropriate HTTP responses
 
 // this const helps us call the service layer functions
-const { createMarket, listMarkets, getMarket, updateMarket } = require("../services/marketService");
+const {
+  createMarket,
+  listMarkets,
+  getMarket,
+  updateMarket,
+  deleteMarket,
+} = require("../services/marketService");
 
 /**
  * POST /api/markets
@@ -166,10 +172,38 @@ async function updateMarketHandler(req, res) {
   }
 }
 
+// Delete a market from the database
+// Removes outdated or invalid market entries
+async function deleteMarketHandler(req, res) {
+  try {
+    // Extract the market ID from the URL parameter
+    const { id } = req.params;
+
+    // Call the service to delete the market
+    await deleteMarket(id);
+
+    // Return 204 No Content on successful deletion
+    return res.status(204).send();
+  } catch (err) {
+    // Handle 404 Not Found when market doesn't exist
+    if (err.status === 404) {
+      return res.status(404).json({
+        error: err.message,
+      });
+    }
+
+    console.error("Error deleting market:", err.message);
+    return res.status(500).json({
+      error: "Failed to delete market",
+    });
+  }
+}
+
 // export the controller handlers
 module.exports = {
   createMarketHandler,
   listMarketsHandler,
   getMarketHandler,
   updateMarketHandler,
+  deleteMarketHandler,
 };
