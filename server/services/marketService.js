@@ -81,8 +81,22 @@ async function listMarkets(filters = {}) {
     offset,
   };
 }
+
+// Get a single market by its MongoDB ID
+// Returns the market object or throws an error if not found
+async function getMarket(marketId) {
+  const market = await Market.findById(marketId);
+  if (!market) {
+    const error = new Error("Market not found");
+    error.status = 404;
+    throw error;
+  }
+  return market;
+}
+
 // Export the service functions
 module.exports = {
   createMarket,
   listMarkets,
+  getMarket,
 };
