@@ -50,7 +50,39 @@ async function createMarket(polymarketId, categoryId = null) {
   const market = new Market({ polymarketId, title, categoryId });
   return await market.save();
 }
-// Export the service function to create a new Market
+
+// List all markets from the database with support for searching, sorting, and pagination
+async function listMarkets(filters = {}) {
+  // Get the filter values, with sensible defaults if not provided
+  const search = filters.search || "";
+  const sort = filters.sort || "-createdAt"; // newest first by default
+  const limit = Math.min(parseInt(filters.limit || "20", 10), 100); // cap at 100
+  const offset = Math.max(parseInt(filters.offset || "0", 10), 0); // no negative offsets
+
+  // Build the MongoDB query, if there is a search term, filter by title
+  // The regex with 'i' flag makes it case-insensitive
+  // Allowing matches like 'Musk' to find 'musk' etc.
+  const query = search ? { title: { $regex: search, $options: "i" } } : {};
+
+  // Run the MongoDB query with all the filtering/sorting/pagination applie
+  const markets = await Market.find(query)
+    .sort(sort)
+    .limit(limit)
+    .skip(offset)
+    .exec();
+
+  // Count total matches so that we have information about how pagination should behave
+  const total = await Market.countDocuments(query);
+
+  return {
+    markets,
+    total,
+    limit,
+    offset,
+  };
+}
+// Export the service functions
 module.exports = {
   createMarket,
+  listMarkets,
 };
