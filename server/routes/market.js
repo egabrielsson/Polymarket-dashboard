@@ -48,10 +48,10 @@ router.get("/", listMarketsHandler);
 // Returns the full market object or 404 if not found
 router.get("/:id", getMarketHandler);
 
-// PUT /api/markets/:id - update a market's fields
-// Currently allows updating categoryId for organizing markets
-// users will create custom categories to organize their saved markets
-router.put("/:id", updateMarketHandler);
+// PATCH /api/markets/:id - partially update a market's fields
+// Allows updating categoryId for organizing markets
+// Future: users will create custom categories to organize their saved markets
+router.patch("/:id", updateMarketHandler);
 
 // DELETE /api/markets/:id - delete a market from the database
 // Removes outdated or invalid market entries
