@@ -3,7 +3,7 @@
 // Validates user input, calls service layer, and returns appropriate HTTP responses
 
 // this const helps us call the service layer functions
-const { createMarket, listMarkets, getMarket } = require("../services/marketService");
+const { createMarket, listMarkets, getMarket, updateMarket } = require("../services/marketService");
 
 /**
  * POST /api/markets
@@ -133,9 +133,43 @@ async function getMarketHandler(req, res) {
   }
 }
 
+// Update a market's categoryId field
+// Allows users to recategorize their saved markets as they organize their watchlist
+async function updateMarketHandler(req, res) {
+  try {
+    // Extract the market ID from the URL parameter
+    const { id } = req.params;
+
+    // Extract the update fields from the request body
+    const updates = req.body;
+
+    // Call the service to update the market
+    const market = await updateMarket(id, updates);
+
+    // Return 200 OK with the updated market data
+    return res.status(200).json({
+      success: true,
+      data: market,
+    });
+  } catch (err) {
+    // Handle 404 Not Found when market doesn't exist
+    if (err.status === 404) {
+      return res.status(404).json({
+        error: err.message,
+      });
+    }
+
+    console.error("Error updating market:", err.message);
+    return res.status(500).json({
+      error: "Failed to update market",
+    });
+  }
+}
+
 // export the controller handlers
 module.exports = {
   createMarketHandler,
   listMarketsHandler,
   getMarketHandler,
+  updateMarketHandler,
 };
