@@ -94,9 +94,44 @@ async function getMarket(marketId) {
   return market;
 }
 
+// Update a market's categoryId field
+// Users can recategorize their saved markets for better organization
+// In future, users will create custom categories to sort their markets
+async function updateMarket(marketId, updates) {
+  // Only allow updating categoryId for now
+  // polymarketId and title should not be changed to keep data consistency
+  const allowedFields = ["categoryId"];
+  const updateData = {};
+
+  for (const field of allowedFields) {
+    if (field in updates) {
+      updateData[field] = updates[field];
+    }
+  }
+
+  // If no valid fields to update, just return the market as it is
+  if (Object.keys(updateData).length === 0) {
+    return await getMarket(marketId);
+  }
+
+  // Update the market and return the updated document
+  const market = await Market.findByIdAndUpdate(marketId, updateData, {
+    new: true,
+  });
+
+  if (!market) {
+    const error = new Error("Market not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return market;
+}
+
 // Export the service functions
 module.exports = {
   createMarket,
   listMarkets,
   getMarket,
+  updateMarket,
 };
