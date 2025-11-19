@@ -3,7 +3,7 @@
 // Routes are mounted at /api/markets in app.js
 
 const express = require("express");
-const { createMarketHandler } = require("../controllers/marketController");
+const { createMarketHandler, listMarketsHandler } = require("../controllers/marketController");
 
 const router = express.Router();
 
@@ -31,5 +31,11 @@ const router = express.Router();
  * }
  */
 router.post("/", createMarketHandler);
+
+// GET /api/markets - list all markets with optional search, sort, and pagination
+// Frontend can use this to show all saved markets and let users search or filter them
+// Query parameters: search, sort, limit, offset
+// Returns array of markets with pagination info (total, hasMore, etc)
+router.get("/", listMarketsHandler);
 
 module.exports = router;
