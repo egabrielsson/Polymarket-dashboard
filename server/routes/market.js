@@ -8,6 +8,7 @@ const {
   listMarketsHandler,
   getMarketHandler,
   updateMarketHandler,
+  deleteMarketHandler,
 } = require("../controllers/marketController");
 
 const router = express.Router();
@@ -51,5 +52,9 @@ router.get("/:id", getMarketHandler);
 // Currently allows updating categoryId for organizing markets
 // users will create custom categories to organize their saved markets
 router.put("/:id", updateMarketHandler);
+
+// DELETE /api/markets/:id - delete a market from the database
+// Removes outdated or invalid market entries
+router.delete("/:id", deleteMarketHandler);
 
 module.exports = router;
