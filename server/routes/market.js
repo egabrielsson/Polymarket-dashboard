@@ -3,7 +3,11 @@
 // Routes are mounted at /api/markets in app.js
 
 const express = require("express");
-const { createMarketHandler, listMarketsHandler } = require("../controllers/marketController");
+const {
+  createMarketHandler,
+  listMarketsHandler,
+  getMarketHandler,
+} = require("../controllers/marketController");
 
 const router = express.Router();
 
@@ -37,5 +41,9 @@ router.post("/", createMarketHandler);
 // Query parameters: search, sort, limit, offset
 // Returns array of markets with pagination info (total, hasMore, etc)
 router.get("/", listMarketsHandler);
+
+// GET /api/markets/:id - get a single market by its MongoDB ID
+// Returns the full market object or 404 if not found
+router.get("/:id", getMarketHandler);
 
 module.exports = router;
