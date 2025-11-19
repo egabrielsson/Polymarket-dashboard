@@ -128,10 +128,25 @@ async function updateMarket(marketId, updates) {
   return market;
 }
 
+// Delete a market from the database
+// Removes outdated or invalid market entries
+async function deleteMarket(marketId) {
+  const market = await Market.findByIdAndDelete(marketId);
+
+  if (!market) {
+    const error = new Error("Market not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return market;
+}
+
 // Export the service functions
 module.exports = {
   createMarket,
   listMarkets,
   getMarket,
   updateMarket,
+  deleteMarket,
 };
