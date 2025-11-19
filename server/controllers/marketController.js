@@ -2,8 +2,8 @@
 // Handles HTTP requests for Market endpoints
 // Validates user input, calls service layer, and returns appropriate HTTP responses
 
-// this const helps us call the service layer function to create markets
-const { createMarket, listMarkets } = require("../services/marketService");
+// this const helps us call the service layer functions
+const { createMarket, listMarkets, getMarket } = require("../services/marketService");
 
 /**
  * POST /api/markets
@@ -104,8 +104,38 @@ async function listMarketsHandler(req, res) {
   }
 }
 
+// Get a single market by its MongoDB ID
+async function getMarketHandler(req, res) {
+  try {
+    // Extract the market ID from the URL parameter
+    const { id } = req.params;
+
+    // Call the service to fetch the market
+    const market = await getMarket(id);
+
+    // Return 200 OK with the market data
+    return res.status(200).json({
+      success: true,
+      data: market,
+    });
+  } catch (err) {
+    // Handle 404 Not Found when market doesn't exist
+    if (err.status === 404) {
+      return res.status(404).json({
+        error: err.message,
+      });
+    }
+
+    console.error("Error getting market:", err.message);
+    return res.status(500).json({
+      error: "Failed to get market",
+    });
+  }
+}
+
 // export the controller handlers
 module.exports = {
   createMarketHandler,
   listMarketsHandler,
+  getMarketHandler,
 };
