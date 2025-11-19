@@ -3,7 +3,7 @@
 // Validates user input, calls service layer, and returns appropriate HTTP responses
 
 // this const helps us call the service layer function to create markets
-const { createMarket } = require("../services/marketService");
+const { createMarket, listMarkets } = require("../services/marketService");
 
 /**
  * POST /api/markets
@@ -67,7 +67,45 @@ async function createMarketHandler(req, res) {
   }
 }
 
-// export the controller handler
+// HTTP handler for GET /api/markets
+// Takes query parameters from the URL and passes them to the service layer
+// Returns a list of markets with pagination info
+async function listMarketsHandler(req, res) {
+  try {
+    // Extract the query parameters from the URL
+    // If they're not provided, we use sensible defaults in the service
+    const filters = {
+      search: req.query.search || "",
+      sort: req.query.sort || "-createdAt",
+      limit: req.query.limit || "20",
+      offset: req.query.offset || "0",
+    };
+
+    // Call the service to get the markets
+    const result = await listMarkets(filters);
+
+    // Return the results with pagination metadata
+    // hasMore tells the frontend if there are more results to fetch
+    return res.status(200).json({
+      success: true,
+      data: result.markets,
+      pagination: {
+        total: result.total,
+        limit: result.limit,
+        offset: result.offset,
+        hasMore: result.offset + result.limit < result.total,
+      },
+    });
+  } catch (err) {
+    console.error("Error listing markets:", err.message);
+    return res.status(500).json({
+      error: "Failed to list markets",
+    });
+  }
+}
+
+// export the controller handlers
 module.exports = {
   createMarketHandler,
+  listMarketsHandler,
 };
