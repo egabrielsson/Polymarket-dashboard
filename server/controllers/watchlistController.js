@@ -5,7 +5,10 @@ const { watch } = require('../models/User');
 const watchlistService = require('../services/watchlistService');
 const { get } = require('../utils/cache');
 
-// Get handler that returns a user's watchlist as an array of markets
+/**
+ * GET /api/users/:userId/watchlist
+ * Get handler that returns a user's watchlist as an array of markets
+ */
 async function getUserWatchlist(req, res, next){
   try {
     // route param
@@ -24,6 +27,33 @@ async function getUserWatchlist(req, res, next){
     // Unexpected errors logs and returns 502
     console.error('Error getting watchlist:', err);
     return res.status(502).json({ error: 'Failed to get user watchlist' });
+  }
+}
+
+
+/**
+ * DELETE /api/users/:userId/watchlist/:marketId
+ * Calls service to remove relation and returns 204 on success.
+ */
+async function removeFromWatchlist(req, res, next) {
+  try {
+    // Route param
+    const { userId, marketId } = req.params;
+    
+    // Delegates to service which returns nothing if succeded
+    await watchlistService.removeFromWatchlist(userId, marketId);
+
+    // Success if no content 
+    return res.status(204).send(); // Returns 204 if succeded
+  } catch (err) {
+
+    // Known service error mappings
+    if (err && err.code === 'BAD_REQUEST') { return res.status(400).json({ error: err.message });}
+    if (err && err.code === 'NOT_FOUND') { return res.status(404).json({ error: err.message });}
+
+    // Unexpected error logs and returns 502
+    console.error('Error removing from watchlist:', err);
+    return res.status(502).json({ error: 'Failed to remove market from watchlist' });
   }
 }
 
