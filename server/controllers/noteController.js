@@ -6,6 +6,7 @@ const {
   createNote,
   listNotesByMarket,
   updateNote,
+  deleteNote,
 } = require("../services/noteService");
 
 // Create a note for a specific market
@@ -138,9 +139,54 @@ async function updateNoteHandler(req, res) {
   }
 }
 
+// Delete a note
+// Only the note owner can delete it
+async function deleteNoteHandler(req, res) {
+  try {
+    // Extract note ID from URL parameter
+    const { id } = req.params;
+
+    // Extract userId from request body
+    const { userId } = req.body;
+
+    // Validate userId is provided
+    if (!userId) {
+      return res.status(401).json({
+        error: "User authentication required",
+      });
+    }
+
+    // Call service layer to delete the note
+    await deleteNote(id, userId);
+
+    // Return 204 No Content on successful deletion
+    return res.status(204).send();
+  } catch (err) {
+    // Handle 404 Not Found
+    if (err.status === 404) {
+      return res.status(404).json({
+        error: err.message,
+      });
+    }
+
+    // Handle 403 Forbidden (not the owner)
+    if (err.status === 403) {
+      return res.status(403).json({
+        error: err.message,
+      });
+    }
+
+    console.error("Error deleting note:", err.message);
+    return res.status(500).json({
+      error: "Failed to delete note",
+    });
+  }
+}
+
 // Export the handlers
 module.exports = {
   createNoteHandler,
   listNotesHandler,
   updateNoteHandler,
+  deleteNoteHandler,
 };
