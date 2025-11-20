@@ -2,7 +2,7 @@
 // Handles HTTP requests for Note endpoints
 // Validates user input, calls service layer, and returns appropriate HTTP responses
 
-const { createNote } = require("../services/noteService");
+const { createNote, listNotesByMarket } = require("../services/noteService");
 
 // Create a note for a specific market
 // User must be authenticated (userId from auth middleware/request)
@@ -51,7 +51,38 @@ async function createNoteHandler(req, res) {
   }
 }
 
+// List all notes for a specific market
+// Returns notes sorted by newest first
+async function listNotesHandler(req, res) {
+  try {
+    // Extract the market ID from the URL parameter
+    const { marketId } = req.params;
+
+    // Validate marketId
+    if (!marketId) {
+      return res.status(400).json({
+        error: "marketId is required",
+      });
+    }
+
+    // Call service layer to get notes
+    const notes = await listNotesByMarket(marketId);
+
+    // Return 200 OK with the notes array (can be empty)
+    return res.status(200).json({
+      success: true,
+      data: notes,
+    });
+  } catch (err) {
+    console.error("Error listing notes:", err.message);
+    return res.status(500).json({
+      error: "Failed to list notes",
+    });
+  }
+}
+
 // Export the handlers
 module.exports = {
   createNoteHandler,
+  listNotesHandler,
 };
