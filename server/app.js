@@ -49,6 +49,10 @@ app.use("/api/polymarket", polymarketRoutes);
 const marketRoutes = require("./routes/market");
 app.use("/api/markets", marketRoutes);
 
+// Note routes for direct note operations (e.g., PUT /api/notes/:id)
+const noteRoutes = require("./routes/note");
+app.use("/api/notes", noteRoutes);
+
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use("/api/*", function (req, res) {
   res.status(404).json({ message: "Not Found" });

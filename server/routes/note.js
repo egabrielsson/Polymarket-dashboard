@@ -1,11 +1,13 @@
 // Note Routes
 // Maps HTTP routes to Note controller handlers
-// Routes are mounted at /api/markets/:marketId/notes in app.js
+// Routes are mounted at /api/markets/:marketId/notes in app.js for nested routes
+// And at /api/notes/:id for direct note operations
 
 const express = require("express");
 const {
   createNoteHandler,
   listNotesHandler,
+  updateNoteHandler,
 } = require("../controllers/noteController");
 
 const router = express.Router({ mergeParams: true });
@@ -18,5 +20,11 @@ router.get("/", listNotesHandler);
 // POST /api/markets/:marketId/notes - create a note for a market
 // Returns 201 Created with the created note
 router.post("/", createNoteHandler);
+
+// PUT /api/notes/:id - update a note's content
+// Only the note owner can update it
+// Request body: { userId, content }
+// Returns 200 OK with the updated note
+router.put("/:id", updateNoteHandler);
 
 module.exports = router;
