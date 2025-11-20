@@ -8,6 +8,7 @@ const {
   createNoteHandler,
   listNotesHandler,
   updateNoteHandler,
+  deleteNoteHandler,
 } = require("../controllers/noteController");
 
 const router = express.Router({ mergeParams: true });
@@ -26,5 +27,11 @@ router.post("/", createNoteHandler);
 // Request body: { userId, content }
 // Returns 200 OK with the updated note
 router.put("/:id", updateNoteHandler);
+
+// DELETE /api/notes/:id - delete a note
+// Only the note owner can delete it
+// Request body: { userId }
+// Returns 204 No Content on success
+router.delete("/:id", deleteNoteHandler);
 
 module.exports = router;
