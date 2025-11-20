@@ -10,8 +10,10 @@ const User = require('../models/User');
 const Market = require('../models/Market');
 const Watchlist = require('../models/Watchlist');
 
-// Helpers function to validate ObjectId's
-// to reduce redundacy
+
+/**
+* Helpers function to validate ObjectId's to reduce redundacy
+*/
 async function ensureUserExists(userId){
     // Validate that usersId's are valid values for MongoDB 
     if(!mongoose.Types.ObjectId.isValid(userId)){ // isValid checks compatability with mongo
@@ -29,8 +31,11 @@ async function ensureUserExists(userId){
     return user; // Returns validated user
 }
 
-// This helper function work like the user validator helper functions
-// but replaces userId by marketId
+
+/** 
+* This helper function work like the user validator helper functions
+* but replaces userId by marketId
+*/
 async function ensureMarketExists(marketId){
     if(!mongoose.Types.ObjectId.isValid(marketId)){
         const err = new Error('Invalid marketId');
@@ -46,7 +51,10 @@ async function ensureMarketExists(marketId){
     return market; // Returns validated market
 }
 
-// Helper function to ensure the user-market relation does NOT already exist.
+
+/**
+* Helper function to ensure the user-market relation does NOT already exist.
+*/
 async function ensureWatchlistNotExists(userId, marketId) {
   const exists = await Watchlist.findOne({ userId, marketId }).lean().exec(); // findOne almost like findById but 
                                                                               // now we only want to find a matching document
@@ -62,12 +70,29 @@ async function ensureWatchlistNotExists(userId, marketId) {
 
 
 
-
 module.exports = {
+
+/**
+ * Function to remove a market from a user's watchlist
+ * checking for ID validations and relation duplication.
+ */
+async removeFromWatchlist(userId, marketId){
+    // Validates ID's of market and user
+    await ensureMarketExists(marketId);
+    await ensureUserExists(userId);
+    // Ensures there is no duplicate relationship
+    await ensureWatchlistNotExists(userId, marketId);
+
+    // Deletes the relation
+    await Watchlist.deleteOne({ _id: entry._id});
+
+    // Returns nothing, the controller will send 204 No Content
+    return;
+},
 
    
 /** 
- * Function to get a users watchlist
+ * Function to get a user's watchlist
  * that checks for user-validation
  * and returs users markets as an array or empty array
  */
@@ -96,6 +121,7 @@ async getUserWatchlist(userId){
     // validates ID's and that they exists
     await ensureUserExists(userId); 
     await ensureMarketExists(marketId);
+    // Makes sure there is no duplicate relationship
     await ensureWatchlistNotExists(userId, marketId);
 
     // Create the watchlist relationship.
