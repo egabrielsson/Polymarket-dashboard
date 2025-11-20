@@ -2,7 +2,11 @@
 // Handles HTTP requests for Note endpoints
 // Validates user input, calls service layer, and returns appropriate HTTP responses
 
-const { createNote, listNotesByMarket } = require("../services/noteService");
+const {
+  createNote,
+  listNotesByMarket,
+  updateNote,
+} = require("../services/noteService");
 
 // Create a note for a specific market
 // User must be authenticated (userId from auth middleware/request)
@@ -81,8 +85,62 @@ async function listNotesHandler(req, res) {
   }
 }
 
+// Update a note's content
+// Only the note owner can update it
+async function updateNoteHandler(req, res) {
+  try {
+    // Extract note ID from URL parameter
+    const { id } = req.params;
+
+    // Extract userId and updated content from request body
+    const { userId, content } = req.body;
+
+    // Validate required fields
+    if (!userId) {
+      return res.status(401).json({
+        error: "User authentication required",
+      });
+    }
+
+    if (!content) {
+      return res.status(400).json({
+        error: "content is required",
+      });
+    }
+
+    // Call service layer to update the note
+    const note = await updateNote(id, userId, content);
+
+    // Return 200 OK with the updated note
+    return res.status(200).json({
+      success: true,
+      data: note,
+    });
+  } catch (err) {
+    // Handle 404 Not Found
+    if (err.status === 404) {
+      return res.status(404).json({
+        error: err.message,
+      });
+    }
+
+    // Handle 403 Forbidden (not the owner)
+    if (err.status === 403) {
+      return res.status(403).json({
+        error: err.message,
+      });
+    }
+
+    console.error("Error updating note:", err.message);
+    return res.status(500).json({
+      error: "Failed to update note",
+    });
+  }
+}
+
 // Export the handlers
 module.exports = {
   createNoteHandler,
   listNotesHandler,
+  updateNoteHandler,
 };
