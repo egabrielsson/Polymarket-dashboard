@@ -3,6 +3,7 @@
 
 const { watch } = require('../models/User');
 const watchlistService = require('../services/watchlistService');
+const { get } = require('../utils/cache');
 
 // Get handler that returns a user's watchlist as an array of markets
 async function getUserWatchlist(req, res, next){
@@ -64,4 +65,4 @@ async function addToWatchlist(req, res, next) {
   }
 }
 
-module.exports = { addToWatchlist};
+module.exports = { addToWatchlist, getUserWatchlist};
