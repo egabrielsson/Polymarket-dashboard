@@ -14,6 +14,8 @@ router.post('/users/:userId/watchlist', addToWatchlist);
 
 // GET /api/users/:userId/watchlist
 // Returns array of populated markets
+// If success 200, if not 502 for failure getting watchlist
+// 
 router.get('/users/:userId/watchlist', getUserWatchlist);
 
 // exports the router to be used later.
