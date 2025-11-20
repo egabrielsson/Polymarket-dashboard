@@ -61,9 +61,38 @@ async function updateNote(noteId, userId, content) {
   return await note.save();
 }
 
+// Delete a note
+// Only the note owner can delete it
+async function deleteNote(noteId, userId) {
+  // Validate required fields
+  if (!noteId || !userId) {
+    throw new Error("noteId and userId are required");
+  }
+
+  // Find the note first to check ownership
+  const note = await Note.findById(noteId);
+
+  if (!note) {
+    const error = new Error("Note not found");
+    error.status = 404;
+    throw error;
+  }
+
+  // Check if the user owns this note
+  if (note.userId.toString() !== userId.toString()) {
+    const error = new Error("Only the note owner can delete this note");
+    error.status = 403;
+    throw error;
+  }
+
+  // Delete the note
+  return await Note.findByIdAndDelete(noteId);
+}
+
 // Export the service functions
 module.exports = {
   createNote,
   listNotesByMarket,
   updateNote,
+  deleteNote,
 };
