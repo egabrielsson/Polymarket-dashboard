@@ -10,20 +10,38 @@ const User = require('../models/User');
 const Market = require('../models/Market');
 const Watchlist = require('../models/Watchlist');
 
+// Helpers function to validate ObjectId's
+// to reduce redundacy
+async function ensureUserExists(userId){
+    // Validate that usersId's are valid values for MongoDB 
+    if(!mongoose.Types.ObjectId.isValid(userId)){ // isValid checks compatability with mongo
+        const err = new Error('Invalid userId');
+        err.code = 'BAD_REQUEST'; // Error 400 "invalid data"
+        throw err;
+    }
+    // Verify the referenced User exists.
+    const user = await User.findById(userId).exec(); // used findByID to look for  the userId                                 
+    if (!user) {
+        const err = new Error('User not found');
+        err.code = 'NOT_FOUND';  // error type 404 ID not found
+        throw err;
+    }
+    return user;
+}
+
 module.exports = {
   
+
   // Add a market to a user's watchlist.
   // Prevents duplicates, creates entry, and returns populated market list.
 
   // Using userId and marketId to connect the market
   // to the personilized wathclist.
   async addToWatchlist(userId, marketId) {
-    // Validate that usersId's are valid values for MongoDB 
-     if (!mongoose.Types.ObjectId.isValid(userId)) { // isValid checks compatability with mongo
-      const err = new Error('Invalid userId');
-      err.code = 'BAD_REQUEST'; // error type 400 "invalid request data" 
-      throw err;               
-    }
+
+    // validates userId and that it exists
+    const user = await ensureUserExists(userId); 
+
     // Validates that the marketsId's are valid.
     if (!mongoose.Types.ObjectId.isValid(marketId)) {
       const err = new Error('Invalid marketId');
@@ -31,14 +49,6 @@ module.exports = {
       throw err;
     }
     
-    // Verify the referenced User exists.
-    const user = await User.findById(userId).exec(); // used findByID to look for  the
-     if (!user) {                                    // userId
-      const err = new Error('User not found');
-      err.code = 'NOT_FOUND'; // error type 404 ID not found
-      throw err;
-    }
-
     // Verify the referenced Market exists.
     const market = await Market.findById(marketId).exec();
     if (!market) {
