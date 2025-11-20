@@ -45,6 +45,13 @@ app.get("/api", function (req, res) {
 const polymarketRoutes = require("./routes/polymarket");
 app.use("/api/polymarket", polymarketRoutes);
 
+// Watchlist routes
+// set to /api so that public path is /api/users/:userId/watchlist
+// since the watchlist is not created from user and does not contain
+// many endpoints.
+const watchlistRoutes = require('./routes/watchlist');
+app.use('/api', watchlistRoutes);
+
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use("/api/*", function (req, res) {
   res.status(404).json({ message: "Not Found" });
