@@ -32,7 +32,7 @@ module.exports = {
     }
     
     // Verify the referenced User exists.
-    const user = await User.findById(userID).exec(); // used findByID to look for  the
+    const user = await User.findById(userId).exec(); // used findByID to look for  the
      if (!user) {                                    // userId
       const err = new Error('User not found');
       err.code = 'NOT_FOUND'; // error type 404 ID not found
