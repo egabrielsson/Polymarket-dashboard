@@ -1,13 +1,40 @@
 // Controller for Watchlist-related endpoints.
 // Handles HTTP layer and maps service error codes -> HTTP status codes.
 
+const { watch } = require('../models/User');
 const watchlistService = require('../services/watchlistService');
+
+// Get handler that returns a user's watchlist as an array of markets
+async function getUserWatchlist(req, res, next){
+  try {
+    // route param
+    const { userId } = req.params;
+
+    // Delegate to service which returs populated market documents
+    const watchlist = await watchlistService.getUserWatchlist(userId);
+
+    // If success return 200 with unified response shape
+    return res.status(200).json({ success: true, data: { watchlist } });
+  } catch (err) {
+    // Map known service error codes to HTTP statuses
+    if (err && err.code === 'BAD_REQUEST') { return res.status(400).json({ error: err.message });}
+    if (err && err.code === 'NOT_FOUND') { return res.status(404).json({ error: err.message });}
+
+    // Unexpected errors logs and returns 502
+    console.error('Error getting watchlist:', err);
+    return res.status(502).json({ error: 'Failed to get user watchlist' });
+  }
+}
+
+
+
+
+
 
 /**
  * POST /api/users/:userId/watchlist
  * Adds a market to the user's watchlist.
  */
-
 
 async function addToWatchlist(req, res, next) {
   try {
