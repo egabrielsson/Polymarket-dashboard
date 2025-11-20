@@ -45,6 +45,10 @@ app.get("/api", function (req, res) {
 const polymarketRoutes = require("./routes/polymarket");
 app.use("/api/polymarket", polymarketRoutes);
 
+// Market routes (includes nested note routes)
+const marketRoutes = require("./routes/market");
+app.use("/api/markets", marketRoutes);
+
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use("/api/*", function (req, res) {
   res.status(404).json({ message: "Not Found" });
