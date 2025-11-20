@@ -46,12 +46,32 @@ async function ensureMarketExists(marketId){
     return market; // Returns validated market
 }
 
+// Helper function to ensure the user-market relation does NOT already exist.
+async function ensureWatchlistNotExists(userId, marketId) {
+  const exists = await Watchlist.findOne({ userId, marketId }).lean().exec(); // findOne almost like findById but 
+                                                                              // now we only want to find a matching document
+                                                                              // and findOne just takes the first document matching the criteria
+
+  if (exists) {         
+    const err = new Error('Market already in watchlist');
+    err.code = 'DUPLICATE'; // error type 409 unique-constraint / duplicate relationship
+    throw err;
+  }
+  return;
+}
+
+
 
 
 module.exports = {
-    
-    // Function to get a users watchlist
-    async getUserWatchlist(userId){
+
+   
+/** 
+ * Function to get a users watchlist
+ * that checks for user-validation
+ * and returs users markets as an array or empty array
+ */
+async getUserWatchlist(userId){
     
     // Helper function to validate userId
     await ensureUserExists(userId);
@@ -63,28 +83,20 @@ module.exports = {
 
     return entries.map(e => e.marketId);
 
-    },
+},
 
-  // Add a market to a user's watchlist.
-  // Prevents duplicates, creates entry, and returns populated market list.
-
-  // Using userId and marketId to connect the market
-  // to the personilized wathclist.
+  /** 
+  * Add a market to a user's watchlist.
+  * Prevents duplicates, creates entry, and returns populated market list.
+  * Using userId and marketId to connect the market
+  * to the personilized wathclist. 
+  */
   async addToWatchlist(userId, marketId) {
 
     // validates ID's and that they exists
     await ensureUserExists(userId); 
     await ensureMarketExists(marketId);
-
-    // Prevent duplicates: check if an entry already exists for this user+market.
-    const exists = await Watchlist.findOne({ userId, marketId }).exec(); // findOne almost like findById but 
-                                                                         // now we only want to find a matching document
-                                                                         // and findOne just takes the first document matching the criteria
-      if (exists) {  
-      const err = new Error('Market already in watchlist');
-      err.code = 'DUPLICATE'; // error type 409 unique-constraint / duplicate relationship
-      throw err;
-    }
+    await ensureWatchlistNotExists(userId, marketId);
 
     // Create the watchlist relationship.
     await Watchlist.create({ userId, marketId });
