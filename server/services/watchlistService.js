@@ -29,6 +29,23 @@ async function ensureUserExists(userId){
     return user;
 }
 
+// This function work like the user validator helper functions
+// but replaces userId by marketId
+async function ensureMarketExists(marketId){
+    if(!mongoose.Types.ObjectId.isValid(marketId)){
+        const err = new Error('Invalid marketId');
+        err.code = 'BAD_REQUEST';
+        throw err;
+    }
+    const market = await Market.findById(marketId).exec();
+    if (!market) {
+        const err = new Error('Market not found');
+        err.code = 'NOT_FOUND';
+        throw err;
+    }
+    return market;
+}
+
 module.exports = {
   
 
@@ -39,23 +56,9 @@ module.exports = {
   // to the personilized wathclist.
   async addToWatchlist(userId, marketId) {
 
-    // validates userId and that it exists
+    // validates ID's and that they exists
     const user = await ensureUserExists(userId); 
-
-    // Validates that the marketsId's are valid.
-    if (!mongoose.Types.ObjectId.isValid(marketId)) {
-      const err = new Error('Invalid marketId');
-      err.code = 'BAD_REQUEST';
-      throw err;
-    }
-    
-    // Verify the referenced Market exists.
-    const market = await Market.findById(marketId).exec();
-    if (!market) {
-      const err = new Error('Market not found');
-      err.code = 'NOT_FOUND';
-      throw err;
-    }
+    const market = await ensureMarketExists(marketId);
 
     // Prevent duplicates: check if an entry already exists for this user+market.
     const exists = await Watchlist.findOne({ userId, marketId }).exec(); // findOne almost like findById but 
