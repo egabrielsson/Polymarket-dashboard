@@ -95,4 +95,4 @@ async function addToWatchlist(req, res, next) {
   }
 }
 
-module.exports = { addToWatchlist, getUserWatchlist};
+module.exports = { addToWatchlist, getUserWatchlist, removeFromWatchlist};
