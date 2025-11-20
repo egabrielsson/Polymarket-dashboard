@@ -26,10 +26,10 @@ async function ensureUserExists(userId){
         err.code = 'NOT_FOUND';  // error type 404 ID not found
         throw err;
     }
-    return user;
+    return user; // Returns validated user
 }
 
-// This function work like the user validator helper functions
+// This helper function work like the user validator helper functions
 // but replaces userId by marketId
 async function ensureMarketExists(marketId){
     if(!mongoose.Types.ObjectId.isValid(marketId)){
@@ -43,11 +43,27 @@ async function ensureMarketExists(marketId){
         err.code = 'NOT_FOUND';
         throw err;
     }
-    return market;
+    return market; // Returns validated market
 }
 
+
+
 module.exports = {
-  
+    
+    // Function to get a users watchlist
+    async getUserWatchlist(userId){
+    
+    // Helper function to validate userId
+    await ensureUserExists(userId);
+
+    // Returns users markets
+    const entries = await Watchlist.find({ userId })
+    .populate('marketId').sort({ createdAt: -1 })
+    .exec();
+
+    return entries.map(e => e.marketId);
+
+    },
 
   // Add a market to a user's watchlist.
   // Prevents duplicates, creates entry, and returns populated market list.
@@ -57,8 +73,8 @@ module.exports = {
   async addToWatchlist(userId, marketId) {
 
     // validates ID's and that they exists
-    const user = await ensureUserExists(userId); 
-    const market = await ensureMarketExists(marketId);
+    await ensureUserExists(userId); 
+    await ensureMarketExists(marketId);
 
     // Prevent duplicates: check if an entry already exists for this user+market.
     const exists = await Watchlist.findOne({ userId, marketId }).exec(); // findOne almost like findById but 
@@ -74,7 +90,10 @@ module.exports = {
     await Watchlist.create({ userId, marketId });
 
     // Return the user's current watchlist as array of populated Market docs.
-    const entries = await Watchlist.find({ userId }).populate('marketId').sort({ createdAt: -1 }).exec();
+    const entries = await Watchlist.find({ userId })
+    .populate('marketId').sort({ createdAt: -1 })
+    .exec();
+
     return entries.map(e => e.marketId);
   }
 };
