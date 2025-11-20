@@ -4,7 +4,7 @@ const express = require('express'); // loads the express package
 const router = express.Router();
 
 // 
-const { addToWatchlist, getUserWatchlist } = require('../controllers/watchlistController'); 
+const { addToWatchlist, getUserWatchlist, removeFromWatchlist } = require('../controllers/watchlistController'); 
 
 // POST /api/users/:userId/watchlist
 // and adds a market to the user's watchlist.
@@ -14,9 +14,13 @@ router.post('/users/:userId/watchlist', addToWatchlist);
 
 // GET /api/users/:userId/watchlist
 // Returns array of populated markets
-// If success 200, if not 502 for failure getting watchlist
-// 
+// If success 200, if not 502 for failure getting
 router.get('/users/:userId/watchlist', getUserWatchlist);
+
+// DELETE /api/users/:userId/watchlist/:marketId
+// Returns 204 if succeded
+// Returns 502 if failed
+router.delete('/users/:userId/watchlist/:marketId', removeFromWatchlist);
 
 // exports the router to be used later.
 module.exports = router;
