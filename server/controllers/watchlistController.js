@@ -1,9 +1,5 @@
 // Controller for Watchlist-related endpoints.
-// Handles HTTP layer and maps service error codes -> HTTP status codes.
-
-const { watch } = require('../models/User');
 const watchlistService = require('../services/watchlistService');
-const { get } = require('../utils/cache');
 
 /**
  * GET /api/users/:userId/watchlist
