@@ -80,8 +80,13 @@ async removeFromWatchlist(userId, marketId){
     // Validates ID's of market and user
     await ensureMarketExists(marketId);
     await ensureUserExists(userId);
-    // Ensures there is no duplicate relationship
-    await ensureWatchlistNotExists(userId, marketId);
+    // Find existing relation
+    const entry = await Watchlist.findOne({ userId, marketId }).exec();
+    if (!entry) {
+    const err = new Error('Watchlist entry not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+    }
 
     // Deletes the relation
     await Watchlist.deleteOne({ _id: entry._id});
@@ -114,7 +119,7 @@ async getUserWatchlist(userId){
   * Add a market to a user's watchlist.
   * Prevents duplicates, creates entry, and returns populated market list.
   * Using userId and marketId to connect the market
-  * to the personilized wathclist. 
+  * to the personilized watchist. 
   */
   async addToWatchlist(userId, marketId) {
 
