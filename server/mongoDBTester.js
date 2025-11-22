@@ -1,4 +1,4 @@
-// mongoDBTester.js — quick script to exercise Mongoose models and watchlist service
+// mongoDBTester.js — quick script to exercise Mongoose models and watchlists service
 // Usage: node mongoDBTester.js
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -6,10 +6,10 @@ const path = require('path');
 
 const User = require('./models/User');
 const Market = require('./models/Market');
-const Watchlist = require('./models/Watchlist');
+const Watchlists = require('./models/Watchlists');
 const Note = require('./models/Note');
 const Category = require('./models/Category');
-const watchlistService = require('./services/watchlistService');
+const watchlistsService = require('./services/watchlistsService');
 
 const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/polyWatchDB';
 
@@ -41,36 +41,36 @@ async function runDemo() {
   );
   console.log('Market:', { id: market._id.toString(), polymarketId: market.polymarketId, title: market.title });
 
-  // Add to watchlist using service
+  // Add to watchlists using service
   try {
-    const watchlist = await watchlistService.addToWatchlist(user._id.toString(), market._id.toString());
-    console.log('Watchlist after add:', watchlist.map(m => ({ id: m._id.toString(), title: m.title })));
+    const watchlists = await watchlistsService.addToWatchlists(user._id.toString(), market._id.toString());
+    console.log('Watchlists after add:', watchlists.map(m => ({ id: m._id.toString(), title: m.title })));
   } catch (err) {
-    console.error('Error adding to watchlist:', err.message);
+    console.error('Error adding to watchlists:', err.message);
   }
 
-  // Get watchlist using service
+  // Get watchlists using service
   try {
-    const watchlist = await watchlistService.getUserWatchlist(user._id.toString());
-    console.log('Retrieved watchlist:', watchlist.map(m => ({ id: m._id.toString(), title: m.title })));
+    const watchlists = await watchlistsService.getUserWatchlists(user._id.toString());
+    console.log('Retrieved watchlists:', watchlists.map(m => ({ id: m._id.toString(), title: m.title })));
   } catch (err) {
-    console.error('Error getting watchlist:', err.message);
+    console.error('Error getting watchlists:', err.message);
   }
 
-  // Remove from watchlist using service
+  // Remove from watchlists using service
   try {
-    await watchlistService.removeFromWatchlist(user._id.toString(), market._id.toString());
-    console.log('Removed from watchlist successfully');
+    await watchlistsService.removeFromWatchlists(user._id.toString(), market._id.toString());
+    console.log('Removed from watchlists successfully');
   } catch (err) {
-    console.error('Error removing from watchlist:', err.message);
+    console.error('Error removing from watchlists:', err.message);
   }
 
   // Verify removal
   try {
-    const watchlist = await watchlistService.getUserWatchlist(user._id.toString());
-    console.log('Watchlist after remove:', watchlist.map(m => ({ id: m._id.toString(), title: m.title })));
+    const watchlists = await watchlistsService.getUserWatchlists(user._id.toString());
+    console.log('Watchlists after remove:', watchlists.map(m => ({ id: m._id.toString(), title: m.title })));
   } catch (err) {
-    console.error('Error getting watchlist after remove:', err.message);
+    console.error('Error getting watchlists after remove:', err.message);
   }
 
   // Create a note (always create a new one for demo)
