@@ -37,13 +37,19 @@ app.options("*", cors());
 app.use(cors());
 
 // Import routes
-app.get("/api", function (req, res) {
-  res.json({ message: "Welcome to your DIT342 backend ExpressJS project!" });
+app.use('/api', require('./routes/Userroute'));
+
+
+// Health endpoint for CI
+app.get('/api', (req, res) => {
+    res.status(200).json({ status: 'ok' });
 });
 
 // Polymarket API routes
+// Provides endpoints to browse and search live markets from external Polymarket API
 const polymarketRoutes = require("./routes/polymarket");
 app.use("/api/polymarket", polymarketRoutes);
+
 
 // Watchlists routes
 // set to /api so that public path is /api/users/:userId/watchlists
@@ -51,6 +57,14 @@ app.use("/api/polymarket", polymarketRoutes);
 // many endpoints.
 const watchlistsRoutes = require('./routes/watchlists');
 app.use('/api', watchlistsRoutes);
+
+// Market routes (includes nested note routes)
+const marketRoutes = require("./routes/market");
+app.use("/api/markets", marketRoutes);
+
+// Note routes for direct note operations (e.g., PUT /api/notes/:id)
+const noteRoutes = require("./routes/note");
+app.use("/api/notes", noteRoutes);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use("/api/*", function (req, res) {
