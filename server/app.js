@@ -50,6 +50,14 @@ app.get('/api', (req, res) => {
 const polymarketRoutes = require("./routes/polymarket");
 app.use("/api/polymarket", polymarketRoutes);
 
+
+// Watchlists routes
+// set to /api so that public path is /api/users/:userId/watchlists
+// since the watchlists is not created from user and does not contain
+// many endpoints.
+const watchlistsRoutes = require('./routes/watchlists');
+app.use('/api', watchlistsRoutes);
+
 // Market routes (includes nested note routes)
 const marketRoutes = require("./routes/market");
 app.use("/api/markets", marketRoutes);

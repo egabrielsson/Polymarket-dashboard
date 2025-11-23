@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 
-const WatchlistSchema = new Schema({
+const WatchlistsSchema = new Schema({
   userId: {
     // who is watching 
     type: Schema.Types.ObjectId,
@@ -20,6 +20,6 @@ const WatchlistSchema = new Schema({
 }, { timestamps: true });
 
 // Prevent a user from watching the same market multiple times
-WatchlistSchema.index({ userId: 1, marketId: 1 }, { unique: true });
+WatchlistsSchema.index({ userId: 1, marketId: 1 }, { unique: true });
 
-module.exports = mongoose.model('Watchlist', WatchlistSchema);
+module.exports = mongoose.model('Watchlists', WatchlistsSchema);

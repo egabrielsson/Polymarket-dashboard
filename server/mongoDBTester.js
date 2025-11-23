@@ -1,4 +1,4 @@
-// mongoDBTester.js — quick script to exercise Mongoose models generated with GPT-5 mini
+// mongoDBTester.js — quick script to exercise Mongoose models and watchlists service
 // Usage: node mongoDBTester.js
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -6,9 +6,10 @@ const path = require('path');
 
 const User = require('./models/User');
 const Market = require('./models/Market');
-const Watchlist = require('./models/Watchlist');
+const Watchlists = require('./models/Watchlists');
 const Note = require('./models/Note');
 const Category = require('./models/Category');
+const watchlistsService = require('./services/watchlistsService');
 
 const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/polyWatchDB';
 
@@ -40,13 +41,37 @@ async function runDemo() {
   );
   console.log('Market:', { id: market._id.toString(), polymarketId: market.polymarketId, title: market.title });
 
-  // Create watchlist entry
-  const watch = await Watchlist.findOneAndUpdate(
-    { userId: user._id, marketId: market._id },
-    { $setOnInsert: { userId: user._id, marketId: market._id } },
-    { upsert: true, new: true }
-  );
-  console.log('Watchlist entry:', { id: watch._id.toString(), userId: watch.userId.toString(), marketId: watch.marketId.toString() });
+  // Add to watchlists using service
+  try {
+    const watchlists = await watchlistsService.addToWatchlists(user._id.toString(), market._id.toString());
+    console.log('Watchlists after add:', watchlists.map(m => ({ id: m._id.toString(), title: m.title })));
+  } catch (err) {
+    console.error('Error adding to watchlists:', err.message);
+  }
+
+  // Get watchlists using service
+  try {
+    const watchlists = await watchlistsService.getUserWatchlists(user._id.toString());
+    console.log('Retrieved watchlists:', watchlists.map(m => ({ id: m._id.toString(), title: m.title })));
+  } catch (err) {
+    console.error('Error getting watchlists:', err.message);
+  }
+
+  // Remove from watchlists using service
+  try {
+    await watchlistsService.removeFromWatchlists(user._id.toString(), market._id.toString());
+    console.log('Removed from watchlists successfully');
+  } catch (err) {
+    console.error('Error removing from watchlists:', err.message);
+  }
+
+  // Verify removal
+  try {
+    const watchlists = await watchlistsService.getUserWatchlists(user._id.toString());
+    console.log('Watchlists after remove:', watchlists.map(m => ({ id: m._id.toString(), title: m.title })));
+  } catch (err) {
+    console.error('Error getting watchlists after remove:', err.message);
+  }
 
   // Create a note (always create a new one for demo)
   const note = await Note.create({ userId: user._id, marketId: market._id, content: 'Demo note created by demo.js' });
