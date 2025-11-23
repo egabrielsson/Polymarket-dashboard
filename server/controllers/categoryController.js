@@ -1,7 +1,11 @@
+// controllers/categoryController.js
+// Handles HTTP-level concerns: req/res, status codes, JSON shape.
+// Uses categoryService for the actual logic.
+
 const {
-  createCategory,
-  updateCategory,
-  deleteCategory,
+    createCategory,
+    updateCategory,
+    deleteCategory,
 } = require("../services/categoryService");
 
 async function createCategoryHandler(req, res) {
@@ -15,10 +19,10 @@ async function createCategoryHandler(req, res) {
             success: true,
             data: category,
             });
-        } catch (err) {
-            if (err.status) {
-                return res.status(err.status).json({ error: err.message });
-            }
+    } catch (err) {
+        if (err.status) {
+            return res.status(err.status).json({ error: err.message });
+        }
         console.error("Error creating category:", err);
         return res.status(500).json({ error: "Failed to create category" });
     }
@@ -56,7 +60,7 @@ async function deleteCategoryHandler(req, res) {
     } catch (err) {
         if (err.status) {
             return res.status(err.status).json({ error: err.message });
-    }
+        }
         console.error("Error deleting category:", err);
         return res.status(500).json({ error: "Failed to delete category" });
     }
