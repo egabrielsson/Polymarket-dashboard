@@ -37,8 +37,12 @@ app.options("*", cors());
 app.use(cors());
 
 // Import routes
-app.get("/api", function (req, res) {
-  res.json({ message: "Welcome to your DIT342 backend ExpressJS project!" });
+app.use('/api', require('./routes/Userroute'));
+
+
+// Health endpoint for CI
+app.get('/api', (req, res) => {
+    res.status(200).json({ status: 'ok' });
 });
 
 // Polymarket API routes
