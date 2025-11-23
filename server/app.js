@@ -45,9 +45,20 @@ app.get('/api', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-// Catch-all for unknown API routes
-app.use('/api/*', (req, res) => {
-    res.status(404).json({ message: 'Not Found' });
+// Polymarket API routes
+// Provides endpoints to browse and search live markets from external Polymarket API
+const polymarketRoutes = require("./routes/polymarket");
+app.use("/api/polymarket", polymarketRoutes);
+
+// Market CRUD routes
+// Provides endpoints to create/store/manage local Market documents
+// Markets store references to external Polymarket markets via polymarketId
+const marketRoutes = require("./routes/market");
+app.use("/api/markets", marketRoutes);
+
+// Catch all non-error handler for api (i.e., 404 Not Found)
+app.use("/api/*", function (req, res) {
+  res.status(404).json({ message: "Not Found" });
 });
 
 // Configuration for serving frontend in production mode
