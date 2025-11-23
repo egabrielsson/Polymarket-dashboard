@@ -50,11 +50,13 @@ app.get('/api', (req, res) => {
 const polymarketRoutes = require("./routes/polymarket");
 app.use("/api/polymarket", polymarketRoutes);
 
-// Market CRUD routes
-// Provides endpoints to create/store/manage local Market documents
-// Markets store references to external Polymarket markets via polymarketId
+// Market routes (includes nested note routes)
 const marketRoutes = require("./routes/market");
 app.use("/api/markets", marketRoutes);
+
+// Note routes for direct note operations (e.g., PUT /api/notes/:id)
+const noteRoutes = require("./routes/note");
+app.use("/api/notes", noteRoutes);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use("/api/*", function (req, res) {
