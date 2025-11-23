@@ -1,19 +1,13 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-
 const UserSchema = new Schema({
-  email: {
+  characterString: {
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    lowercase: true
-  },
-  passwordHash: {
-    // hashed password
-    type: String,
-    required: true
+    minlength: 16,
+    maxlength: 16
   },
   username: {
     type: String,
@@ -22,14 +16,4 @@ const UserSchema = new Schema({
   }
 }, { timestamps: true });
 
-// Validate email format
-UserSchema.path('email').validate(function (value) {
-  return /\S+@\S+\.\S+/.test(value);
-}, 'Invalid email format');
-
 module.exports = mongoose.model('User', UserSchema);
-
-
-
-
-
