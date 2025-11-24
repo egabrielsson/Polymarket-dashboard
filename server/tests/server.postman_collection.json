@@ -1,75 +1,1125 @@
 {
-	"info": {
-		"_postman_id": "f7ee95b5-9cb9-442f-a6a9-42de46138872",
-		"name": "server",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "GET /api",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "b58d92ec-5214-450c-adb0-28e068aa71b9",
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"id": "05864cff-5cba-4070-bac3-a59328954ebf",
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"id": "e9c319be-3306-4fc5-ba34-fcf64391213a",
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"id": "cd185905-a834-4211-8030-583d17702534",
-			"key": "host",
-			"value": "http://localhost:3000",
-			"type": "string"
-		}
-	],
-	"protocolProfileBehavior": {}
+  "info": {
+    "_postman_id": "c0b2c8b9-fafb-4b01-bd6f-b5d69aaf840f",
+    "name": "Milestone 1 - Group 25",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "USERS",
+      "item": [
+        {
+          "name": "1. GET /api/users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// getUsers",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success true\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"success\", true);",
+                  "});",
+                  "",
+                  "pm.test(\"Users array is returned\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.nested.property(\"data.users\");",
+                  "    pm.expect(jsonData.data.users).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users",
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. POST /api/users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// createUser",
+                  "pm.test(\"Status code is 201 or 400\", function () {",
+                  "    pm.expect([201, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 201, user has required fields\", function () {",
+                  "    if (pm.response.code === 201) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property(\"user\");",
+                  "        pm.expect(jsonData.user).to.have.property(\"characterString\");",
+                  "        pm.expect(jsonData.user).to.have.property(\"username\");",
+                  "        pm.expect(jsonData.user).to.have.property(\"id\");",
+                  "        pm.environment.set(\"characterString\", jsonData.user.characterString);",
+                  "        pm.environment.set(\"userId\", jsonData.user.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"testuser123\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/users",
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. POST /api/sessions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// loginUser",
+                  "pm.test(\"Status code is 200 or 401 or 404\", function () {",
+                  "    pm.expect([200, 401, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, returns user data\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property(\"characterString\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"characterString\": \"{{characterString}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/sessions",
+              "host": ["{{host}}"],
+              "path": ["api", "sessions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. PATCH /api/users/:characterString",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// updateUser",
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, returns updated user\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property(\"username\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"newUsername\": \"updatedusername\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/users/{{characterString}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{characterString}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. DELETE /api/users/:characterString",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteUser",
+                  "pm.test(\"Status code is 200, 204, or 404\", function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{characterString}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{characterString}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "POLYMARKET API",
+      "item": [
+        {
+          "name": "7. GET /api/polymarket/markets?limit=20",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// listPolymarkets",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success true\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"success\", true);",
+                  "});",
+                  "",
+                  "pm.test(\"Markets array is in data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"data\");",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Markets have required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        pm.expect(jsonData.data[0]).to.have.property(\"id\");",
+                  "        pm.expect(jsonData.data[0]).to.have.property(\"question\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/polymarket/markets?limit=20",
+              "host": ["{{host}}"],
+              "path": ["api", "polymarket", "markets"],
+              "query": [{ "key": "limit", "value": "20" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8. GET /api/polymarket/markets/:pmId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// getPolymarketById",
+                  "pm.test(\"Status code is 200 or 400\", function () {",
+                  "    pm.expect([200, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, has id and question\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                    "        pm.expect(jsonData).to.have.property(\"data\");",
+                    "        pm.expect(jsonData.data).to.have.property(\"id\");",
+                    "        pm.expect(jsonData.data).to.have.property(\"question\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/polymarket/markets/516950",
+              "host": ["{{host}}"],
+              "path": ["api", "polymarket", "markets", "516950"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9. GET /api/polymarket/tech-markets?limit=10",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// listTechMarkets",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains markets array\", function () {",
+                    "    var jsonData = pm.response.json();",
+                    "    pm.expect(jsonData).to.have.nested.property(\"data.markets\");",
+                    "    pm.expect(jsonData.data.markets).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/polymarket/tech-markets?limit=10",
+              "host": ["{{host}}"],
+              "path": ["api", "polymarket", "tech-markets"],
+              "query": [{ "key": "limit", "value": "10" }]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "MARKETS",
+      "item": [
+        {
+          "name": "10. POST /api/markets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// createMarket",
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success true\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "});",
+                  "",
+                  "pm.test(\"Market has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property(\"_id\");",
+                  "    pm.expect(jsonData.data).to.have.property(\"polymarketId\");",
+                  "    pm.expect(jsonData.data).to.have.property(\"title\");",
+                  "});",
+                  "",
+                  "pm.environment.set(\"marketId\", pm.response.json().data._id);",
+                  "pm.test(\"Saved marketId to environment\", function () {",
+                  "    pm.expect(pm.environment.get(\"marketId\")).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"polymarketId\": \"516950\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/markets",
+              "host": ["{{host}}"],
+              "path": ["api", "markets"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11. GET /api/markets?limit=10&offset=0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// listMarkets",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response data is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Pagination fields present\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.pagination).to.have.property(\"total\");",
+                  "    pm.expect(jsonData.pagination).to.have.property(\"limit\");",
+                  "    pm.expect(jsonData.pagination).to.have.property(\"offset\");",
+                  "    pm.expect(jsonData.pagination).to.have.property(\"hasMore\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/markets?limit=10&offset=0",
+              "host": ["{{host}}"],
+              "path": ["api", "markets"],
+              "query": [
+                { "key": "limit", "value": "10" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "12. GET /api/markets/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// getMarketById",
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, market has required fields\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.have.property(\"_id\");",
+                  "        pm.expect(jsonData.data).to.have.property(\"polymarketId\");",
+                  "        pm.expect(jsonData.data).to.have.property(\"title\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/markets/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "13. PATCH /api/markets/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// updateMarket",
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, returns updated market\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.have.property(\"_id\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"categoryId\": null}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/markets/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "NOTES",
+      "item": [
+        {
+          "name": "15. POST /api/markets/:marketId/notes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// createNote",
+                  "pm.test(\"Status code is 201, 401, or 400\", function () {",
+                  "    pm.expect([201, 401, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 201, note has required fields\", function () {",
+                  "    if (pm.response.code === 201) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.have.property(\"_id\");",
+                  "        pm.expect(jsonData.data).to.have.property(\"content\");",
+                  "        pm.environment.set(\"noteId\", jsonData.data._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": \"507f1f77bcf86cd799439011\", \"content\": \"Test note content\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/markets/{{marketId}}/notes",
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}", "notes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16. GET /api/markets/:marketId/notes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// listNotes",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response data is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/markets/{{marketId}}/notes",
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}", "notes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17. PUT /api/notes/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// updateNote",
+                  "pm.test(\"Status code is 200, 401, 403, or 404\", function () {",
+                  "    pm.expect([200, 401, 403, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, returns updated note\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.have.property(\"content\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": \"507f1f77bcf86cd799439011\", \"content\": \"Updated note content\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/notes/{{noteId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "notes", "{{noteId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18. DELETE /api/notes/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteNote",
+                  "pm.test(\"Status code is 204, 401, 403, or 404\", function () {",
+                  "    pm.expect([204, 401, 403, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": \"507f1f77bcf86cd799439011\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/notes/{{noteId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "notes", "{{noteId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "CATEGORIES",
+      "item": [
+        {
+          "name": "19. POST /api/categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// createCategory",
+                  "pm.test(\"Status code is 201 or 400\", function () {",
+                  "    pm.expect([201, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 201, category has required fields\", function () {",
+                  "    if (pm.response.code === 201) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.have.property(\"_id\");",
+                  "        pm.expect(jsonData.data).to.have.property(\"name\");",
+                  "        pm.environment.set(\"categoryId\", jsonData.data._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Sports Markets\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/categories",
+              "host": ["{{host}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20. PUT /api/categories/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// updateCategory",
+                  "pm.test(\"Status code is 200, 403, or 404\", function () {",
+                  "    pm.expect([200, 403, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, returns updated category\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.have.property(\"name\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated Category Name\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/categories/{{categoryId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "21. DELETE /api/categories/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteCategory",
+                  "pm.test(\"Status code is 204, 403, or 404\", function () {",
+                  "    pm.expect([204, 403, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/categories/{{categoryId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "WATCHLISTS",
+      "item": [
+        {
+          "name": "21b. POST /api/users (watchlist setup)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// createWatchlistUser",
+                  "pm.test(\"Status code is 201 or 400\", function () {",
+                  "    pm.expect([201, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 201, store watchlist user fields\", function () {",
+                  "    if (pm.response.code === 201) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property(\"user\");",
+                  "        pm.environment.set(\"watchlistCharacterString\", jsonData.user.characterString);",
+                  "        pm.environment.set(\"watchlistUserId\", jsonData.user.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"watchlistUser\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/users",
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "22. POST /api/users/:userId/watchlists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// addToWatchlist",
+                  "pm.test(\"Status code is 201, 400, or 409\", function () {",
+                  "    pm.expect([201, 400, 409]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 201, response has data\", function () {",
+                  "    if (pm.response.code === 201) {",
+                  "        var jsonData = pm.response.json();",
+                    "        pm.expect(jsonData).to.have.property(\"success\", true);",
+                    "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"marketId\": \"{{marketId}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "23. GET /api/users/:userId/watchlists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// getWatchlist",
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, response has data\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                    "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
+                    "        pm.expect(jsonData.data.watchlist).to.be.an(\"array\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "23b. GET /api/users/:userId/watchlists/:marketId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// getWatchlistItem",
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, response has market data\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.nested.property(\"data.market\");",
+                  "        pm.expect(jsonData.data.market).to.have.property(\"_id\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists", "{{marketId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "24. DELETE /api/users/:userId/watchlists/:marketId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteFromWatchlist",
+                  "pm.test(\"Status code is 204 or 404\", function () {",
+                  "    pm.expect([204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists", "{{marketId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "CLEANUP",
+      "item": [
+        {
+          "name": "14. DELETE /api/markets/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteMarket",
+                  "pm.test(\"Status code is 204 or 404\", function () {",
+                  "    pm.expect([204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/markets/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18. DELETE /api/notes/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteNote",
+                  "pm.test(\"Status code is 204, 401, 403, or 404\", function () {",
+                  "    pm.expect([204, 401, 403, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": \"507f1f77bcf86cd799439011\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/notes/{{noteId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "notes", "{{noteId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "25. DELETE watchlist user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteWatchlistUser",
+                  "pm.test(\"Status code is 200, 204, or 404\", function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistCharacterString}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistCharacterString}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "host",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "marketId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "noteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "characterString",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "watchlistUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "watchlistCharacterString",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }
