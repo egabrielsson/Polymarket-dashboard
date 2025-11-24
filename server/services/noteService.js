@@ -44,16 +44,16 @@ async function updateNote(noteId, userId, content) {
   const note = await Note.findById(noteId);
 
   if (!note) {
-    const error = new Error("Note not found");
-    error.status = 404;
-    throw error;
+    const err = new Error("Note not found");
+    err.code = 'NOT_FOUND';
+    throw err;
   }
 
   // Check if the user owns this note
   if (note.userId.toString() !== userId.toString()) {
-    const error = new Error("Only the note owner can update this note");
-    error.status = 403;
-    throw error;
+    const err = new Error("Only the note owner can update this note");
+    err.code = 'FORBIDDEN';
+    throw err;
   }
 
   // Update the note content and return the updated document
@@ -73,16 +73,16 @@ async function deleteNote(noteId, userId) {
   const note = await Note.findById(noteId);
 
   if (!note) {
-    const error = new Error("Note not found");
-    error.status = 404;
-    throw error;
+    const err = new Error("Note not found");
+    err.code = 'NOT_FOUND';
+    throw err;
   }
 
   // Check if the user owns this note
   if (note.userId.toString() !== userId.toString()) {
-    const error = new Error("Only the note owner can delete this note");
-    error.status = 403;
-    throw error;
+    const err = new Error("Only the note owner can delete this note");
+    err.code = 'FORBIDDEN';
+    throw err;
   }
 
   // Delete the note
