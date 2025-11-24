@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node ./app.js",
     "dev": "nodemon ./app.js",
+    "demo": "node ./mongoDBTester.js",
     "lint": "eslint .",
     "test": "cross-env-shell MONGODB_URI=mongodb://localhost:27017/serverTestDB \"npm run newman-server\"",
     "ci-test": "npm run newman-server",
@@ -26,13 +27,14 @@
     "body-parser": "^1.20.2",
     "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^4.19.2",
     "mongoose": "^8.5.4",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "newman": "^6.2.1",
+    "newman": "^6.2.0",
     "nodemon": "^3.1.4",
     "npm-run-all": "^4.1.5",
     "wait-on": "^8.0.0"
