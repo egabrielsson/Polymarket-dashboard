@@ -7,6 +7,7 @@ const router = express.Router();
 const {
   addToWatchlist,
   getUserWatchlist,
+  getWatchlistItem,
   removeFromWatchlist,
 } = require("../controllers/watchlistController");
 
@@ -20,6 +21,10 @@ router.post("/users/:userId/watchlists", addToWatchlist);
 // Returns array of populated markets
 // If success 200, if not 502 for failure getting
 router.get("/users/:userId/watchlists", getUserWatchlist);
+
+// GET /api/users/:userId/watchlists/:marketId
+// Returns single watchlist entry populated with market
+router.get("/users/:userId/watchlists/:marketId", getWatchlistItem);
 
 // DELETE /api/users/:userId/watchlists/:marketId
 // Returns 204 if succeded

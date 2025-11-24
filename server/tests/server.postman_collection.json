@@ -921,6 +921,41 @@
           "response": []
         },
         {
+          "name": "23b. GET /api/users/:userId/watchlists/:marketId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// getWatchlistItem",
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, response has market data\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.nested.property(\"data.market\");",
+                  "        pm.expect(jsonData.data.market).to.have.property(\"_id\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists", "{{marketId}}"]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "24. DELETE /api/users/:userId/watchlists/:marketId",
           "event": [
             {

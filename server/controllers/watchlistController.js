@@ -26,6 +26,27 @@ async function getUserWatchlist(req, res, next){
   }
 }
 
+/**
+ * GET /api/users/:userId/watchlists/:marketId
+ * Returns a single watchlist entry populated with market data.
+ */
+async function getWatchlistItem(req, res, next) {
+  try {
+    const { userId, marketId } = req.params;
+    const market = await watchlistService.getWatchlistEntry(userId, marketId);
+    return res.status(200).json({ success: true, data: { market } });
+  } catch (err) {
+    if (err && err.code === 'BAD_REQUEST') {
+      return res.status(400).json({ error: err.message });
+    }
+    if (err && err.code === 'NOT_FOUND') {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error('Error getting watchlist item:', err);
+    return res.status(502).json({ error: 'Failed to get watchlist item' });
+  }
+}
+
 
 /**
  * DELETE /api/users/:userId/watchlists/:marketId
@@ -91,4 +112,9 @@ async function addToWatchlist(req, res, next) {
   }
 }
 
-module.exports = { addToWatchlist, getUserWatchlist, removeFromWatchlist};
+module.exports = {
+  addToWatchlist,
+  getUserWatchlist,
+  getWatchlistItem,
+  removeFromWatchlist,
+};

@@ -115,6 +115,27 @@ async getUserWatchlist(userId){
 
 },
 
+/**
+ * Get a single watchlist entry populated with the market document.
+ */
+async getWatchlistEntry(userId, marketId) {
+
+    await ensureUserExists(userId);
+    await ensureMarketExists(marketId);
+
+    const entry = await Watchlist.findOne({ userId, marketId })
+      .populate('marketId')
+      .exec();
+
+    if (!entry) {
+        const err = new Error('Watchlist entry not found');
+        err.code = 'NOT_FOUND';
+        throw err;
+    }
+
+    return entry.marketId;
+},
+
   /** 
   * Add a market to a user's watchlist.
   * Prevents duplicates, creates entry, and returns populated market list.
