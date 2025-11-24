@@ -103,9 +103,18 @@ async function deleteUserByCharacterString(characterString) {
   return deletedUser;
 }
 
+/**
+ * Get all users
+ */
+async function getAllUsers() {
+  const users = await User.find({}).select('_id username characterString');
+  return users;
+}
+
 module.exports = {
   createUser,
   loginByCharacterString,
   updateUsername,
   deleteUserByCharacterString,
+  getAllUsers,
 };

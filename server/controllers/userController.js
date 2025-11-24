@@ -7,6 +7,7 @@ const {
   loginByCharacterString,
   updateUsername,
   deleteUserByCharacterString,
+  getAllUsers,
 } = require("../services/userService");
 
 // POST /api/users
@@ -110,9 +111,25 @@ async function deleteUserHandler(req, res) {
   }
 }
 
+// GET /api/users
+async function getAllUsersHandler(req, res) {
+  try {
+    const users = await getAllUsers();
+
+    return res.status(200).json({
+      success: true,
+      data: { users },
+    });
+  } catch (err) {
+    console.error("Error getting all users:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
 module.exports = {
   createUserHandler,
   loginHandler,
   updateUsernameHandler,
   deleteUserHandler,
+  getAllUsersHandler,
 };

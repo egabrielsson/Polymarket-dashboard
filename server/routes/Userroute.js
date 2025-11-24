@@ -7,9 +7,16 @@ const {
   loginHandler,
   updateUsernameHandler,
   deleteUserHandler,
+  getAllUsersHandler,
 } = require("../controllers/userController");
 
 const router = express.Router();
+
+/**
+ * GET /api/users
+ * Get all users
+ */
+router.get("/users", getAllUsersHandler);
 
 /**
  * POST /api/users
