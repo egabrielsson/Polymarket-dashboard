@@ -22,8 +22,8 @@ async function createCategoryHandler(req, res) {
             data: category,
         });
     } catch (err) {
-        if (err.status) {
-            return res.status(err.status).json({ error: err.message });
+        if (err && err.code === 'BAD_REQUEST') {
+            return res.status(400).json({ error: err.message });
         }
         console.error("Error creating category:", err);
         return res.status(500).json({ error: "Failed to create category" });
@@ -45,8 +45,14 @@ async function updateCategoryHandler(req, res) {
             data: category,
         });
     } catch (err) {
-        if (err.status) {
-            return res.status(err.status).json({ error: err.message });
+        if (err && err.code === 'BAD_REQUEST') {
+            return res.status(400).json({ error: err.message });
+        }
+        if (err && err.code === 'NOT_FOUND') {
+            return res.status(404).json({ error: err.message });
+        }
+        if (err && err.code === 'FORBIDDEN') {
+            return res.status(403).json({ error: err.message });
         }
         console.error("Error updating category:", err);
         return res.status(500).json({ error: "Failed to update category" });
@@ -64,8 +70,11 @@ async function deleteCategoryHandler(req, res) {
 
         return res.status(204).send();
     } catch (err) {
-        if (err.status) {
-            return res.status(err.status).json({ error: err.message });
+        if (err && err.code === 'NOT_FOUND') {
+            return res.status(404).json({ error: err.message });
+        }
+        if (err && err.code === 'FORBIDDEN') {
+            return res.status(403).json({ error: err.message });
         }
         console.error("Error deleting category:", err);
         return res.status(500).json({ error: "Failed to delete category" });
