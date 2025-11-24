@@ -40,13 +40,8 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/users",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "users"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
             }
           },
           "response": []
@@ -93,13 +88,8 @@
             },
             "url": {
               "raw": "{{host}}/api/users",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "users"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
             }
           },
           "response": []
@@ -141,13 +131,8 @@
             },
             "url": {
               "raw": "{{host}}/api/sessions",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "sessions"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "sessions"]
             }
           },
           "response": []
@@ -189,14 +174,8 @@
             },
             "url": {
               "raw": "{{host}}/api/users/{{characterString}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "users",
-                "{{characterString}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{characterString}}"]
             }
           },
           "response": []
@@ -222,14 +201,8 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/users/{{characterString}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "users",
-                "{{characterString}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{characterString}}"]
             }
           },
           "response": []
@@ -279,20 +252,9 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/polymarket/markets?limit=20",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "polymarket",
-                "markets"
-              ],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "20"
-                }
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "polymarket", "markets"],
+              "query": [{ "key": "limit", "value": "20" }]
             }
           },
           "response": []
@@ -312,9 +274,9 @@
                   "pm.test(\"If 200, has id and question\", function () {",
                   "    if (pm.response.code === 200) {",
                   "        var jsonData = pm.response.json();",
-                  "        pm.expect(jsonData).to.have.property(\"data\");",
-                  "        pm.expect(jsonData.data).to.have.property(\"id\");",
-                  "        pm.expect(jsonData.data).to.have.property(\"question\");",
+                    "        pm.expect(jsonData).to.have.property(\"data\");",
+                    "        pm.expect(jsonData.data).to.have.property(\"id\");",
+                    "        pm.expect(jsonData.data).to.have.property(\"question\");",
                   "    }",
                   "});"
                 ],
@@ -327,15 +289,8 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/polymarket/markets/516950",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "polymarket",
-                "markets",
-                "516950"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "polymarket", "markets", "516950"]
             }
           },
           "response": []
@@ -353,9 +308,9 @@
                   "});",
                   "",
                   "pm.test(\"Response contains markets array\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.nested.property(\"data.markets\");",
-                  "    pm.expect(jsonData.data.markets).to.be.an(\"array\");",
+                    "    var jsonData = pm.response.json();",
+                    "    pm.expect(jsonData).to.have.nested.property(\"data.markets\");",
+                    "    pm.expect(jsonData.data.markets).to.be.an(\"array\");",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -367,20 +322,9 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/polymarket/tech-markets?limit=10",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "polymarket",
-                "tech-markets"
-              ],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "polymarket", "tech-markets"],
+              "query": [{ "key": "limit", "value": "10" }]
             }
           },
           "response": []
@@ -437,13 +381,8 @@
             },
             "url": {
               "raw": "{{host}}/api/markets",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "markets"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "markets"]
             }
           },
           "response": []
@@ -482,22 +421,11 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/markets?limit=10&offset=0",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "markets"
-              ],
+              "host": ["{{host}}"],
+              "path": ["api", "markets"],
               "query": [
-                {
-                  "key": "limit",
-                  "value": "10"
-                },
-                {
-                  "key": "offset",
-                  "value": "0"
-                }
+                { "key": "limit", "value": "10" },
+                { "key": "offset", "value": "0" }
               ]
             }
           },
@@ -533,14 +461,8 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/markets/{{marketId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "markets",
-                "{{marketId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}"]
             }
           },
           "response": []
@@ -582,14 +504,8 @@
             },
             "url": {
               "raw": "{{host}}/api/markets/{{marketId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "markets",
-                "{{marketId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}"]
             }
           },
           "response": []
@@ -638,15 +554,8 @@
             },
             "url": {
               "raw": "{{host}}/api/markets/{{marketId}}/notes",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "markets",
-                "{{marketId}}",
-                "notes"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}", "notes"]
             }
           },
           "response": []
@@ -677,15 +586,8 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/markets/{{marketId}}/notes",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "markets",
-                "{{marketId}}",
-                "notes"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}", "notes"]
             }
           },
           "response": []
@@ -727,14 +629,8 @@
             },
             "url": {
               "raw": "{{host}}/api/notes/{{noteId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "notes",
-                "{{noteId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "notes", "{{noteId}}"]
             }
           },
           "response": []
@@ -769,14 +665,8 @@
             },
             "url": {
               "raw": "{{host}}/api/notes/{{noteId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "notes",
-                "{{noteId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "notes", "{{noteId}}"]
             }
           },
           "response": []
@@ -825,13 +715,8 @@
             },
             "url": {
               "raw": "{{host}}/api/categories",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "categories"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "categories"]
             }
           },
           "response": []
@@ -873,14 +758,8 @@
             },
             "url": {
               "raw": "{{host}}/api/categories/{{categoryId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "categories",
-                "{{categoryId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
             }
           },
           "response": []
@@ -906,14 +785,164 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/categories/{{categoryId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "categories",
-                "{{categoryId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "WATCHLISTS",
+      "item": [
+        {
+          "name": "21b. POST /api/users (watchlist setup)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// createWatchlistUser",
+                  "pm.test(\"Status code is 201 or 400\", function () {",
+                  "    pm.expect([201, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 201, store watchlist user fields\", function () {",
+                  "    if (pm.response.code === 201) {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property(\"user\");",
+                  "        pm.environment.set(\"watchlistCharacterString\", jsonData.user.characterString);",
+                  "        pm.environment.set(\"watchlistUserId\", jsonData.user.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"watchlistUser\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/users",
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "22. POST /api/users/:userId/watchlists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// addToWatchlist",
+                  "pm.test(\"Status code is 201, 400, or 409\", function () {",
+                  "    pm.expect([201, 400, 409]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 201, response has data\", function () {",
+                  "    if (pm.response.code === 201) {",
+                  "        var jsonData = pm.response.json();",
+                    "        pm.expect(jsonData).to.have.property(\"success\", true);",
+                    "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"marketId\": \"{{marketId}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "23. GET /api/users/:userId/watchlists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// getWatchlist",
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"If 200, response has data\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        var jsonData = pm.response.json();",
+                    "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
+                    "        pm.expect(jsonData.data.watchlist).to.be.an(\"array\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "24. DELETE /api/users/:userId/watchlists/:marketId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteFromWatchlist",
+                  "pm.test(\"Status code is 204 or 404\", function () {",
+                  "    pm.expect([204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistUserId}}", "watchlists", "{{marketId}}"]
             }
           },
           "response": []
@@ -944,14 +973,8 @@
             "header": [],
             "url": {
               "raw": "{{host}}/api/markets/{{marketId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "markets",
-                "{{marketId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "markets", "{{marketId}}"]
             }
           },
           "response": []
@@ -986,14 +1009,35 @@
             },
             "url": {
               "raw": "{{host}}/api/notes/{{noteId}}",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "notes",
-                "{{noteId}}"
-              ]
+              "host": ["{{host}}"],
+              "path": ["api", "notes", "{{noteId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "25. DELETE watchlist user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteWatchlistUser",
+                  "pm.test(\"Status code is 200, 204, or 404\", function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users/{{watchlistCharacterString}}",
+              "host": ["{{host}}"],
+              "path": ["api", "users", "{{watchlistCharacterString}}"]
             }
           },
           "response": []
@@ -1029,6 +1073,16 @@
     },
     {
       "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "watchlistUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "watchlistCharacterString",
       "value": "",
       "type": "string"
     }
