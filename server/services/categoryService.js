@@ -1,10 +1,8 @@
 
 const Category = require("../models/Category");
 
-/**
- * Create a category. If userId is provided -> user-owned category.
- * If userId is null -> global category.
- */
+// Create a category
+// If userId is provided, it's user-owned; if null, it's a global category
 async function createCategory(userId, name) {
     if (!name) {
         const err = new Error("Category name is required");
@@ -15,8 +13,8 @@ async function createCategory(userId, name) {
     return category;
 }
 
-
-
+// Update a category's name
+// Only user-owned categories can be updated, not global ones
 async function updateCategory(userId, categoryId, name) {
     if (!name) {
         const err = new Error("Category name is required");
@@ -31,10 +29,9 @@ async function updateCategory(userId, categoryId, name) {
             throw err;
         }
 
-  // Ownership rule:
-  // • If category.userId exists, user must match.
-  // • If category.userId is null → global category → can’t update.
-        if (category.userId) {
+    // Check ownership: user-owned categories can only be edited by their owner
+    // Global categories (userId is null) cannot be edited
+    if (category.userId) {
             if (category.userId.toString() !== userId.toString()) {
                 const err = new Error("You do not own this category");
                 err.status = 403;
@@ -50,21 +47,17 @@ async function updateCategory(userId, categoryId, name) {
     return await category.save();
 }
 
-async function deleteCategory(userId, categoryId, name){
-    if (!name) {
-        const err = new Error("Category name is required");
-        err.status = 400;
-        throw err;
-    }
+// Delete a category
+// Only user-owned categories can be deleted, not global ones
+async function deleteCategory(userId, categoryId) {
     const category = await Category.findById(categoryId);
         if (!category) {
-            const err = new Error("Catagory not found");
+            const err = new Error("Category not found");
             err.status = 404;
             throw err;
         }
-  // Ownership rule:
-  // • If category.userId exists, user must match.
-  // • If category.userId is null → global category → can’t update.
+  // Check ownership: user-owned categories can only be deleted by their owner
+  // Global categories (userId is null) cannot be deleted
         if (category.userId) {
             if (category.userId.toString() !== userId.toString()) {
                 const err = new Error("You do not own this category");
@@ -72,12 +65,12 @@ async function deleteCategory(userId, categoryId, name){
                 throw err;
             }
             } else {
-            const err = new Error("Global categories cannot be edited");
+            const err = new Error("Global categories cannot be deleted");
             err.status = 403;
             throw err;
         }
 
-    await createCategory.deleteOne({_id: categoryId});
+    await Category.findByIdAndDelete(categoryId);
 }
 
 

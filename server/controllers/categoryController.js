@@ -1,6 +1,6 @@
-// controllers/categoryController.js
-// Handles HTTP-level concerns: req/res, status codes, JSON shape.
-// Uses categoryService for the actual logic.
+// Category Controller
+// Handles HTTP requests for Category endpoints
+// Validates user input, calls service layer, and returns appropriate HTTP responses
 
 const {
     createCategory,
@@ -8,9 +8,11 @@ const {
     deleteCategory,
 } = require("../services/categoryService");
 
+// Create a new category for a user
+// If no userId is provided, creates a global category
 async function createCategoryHandler(req, res) {
     try {
-        const userId = req.user?._id || null; // null → create global category
+        const userId = req.user?._id || null;
         const { name } = req.body;
 
         const category = await createCategory(userId, name);
@@ -18,7 +20,7 @@ async function createCategoryHandler(req, res) {
         return res.status(201).json({
             success: true,
             data: category,
-            });
+        });
     } catch (err) {
         if (err.status) {
             return res.status(err.status).json({ error: err.message });
@@ -28,6 +30,8 @@ async function createCategoryHandler(req, res) {
     }
 }
 
+// Update a category's name
+// Only the category owner can update it
 async function updateCategoryHandler(req, res) {
     try {
         const userId = req.user?._id;
@@ -49,6 +53,8 @@ async function updateCategoryHandler(req, res) {
     }
 }
 
+// Delete a category
+// Only the category owner can delete it
 async function deleteCategoryHandler(req, res) {
     try {
         const userId = req.user?._id;
@@ -66,6 +72,7 @@ async function deleteCategoryHandler(req, res) {
     }
 }
 
+// Export the handlers
 module.exports = {
     createCategoryHandler,
     updateCategoryHandler,
