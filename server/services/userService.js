@@ -7,7 +7,8 @@ const generateId = require("../IDcreation");
  */
 async function createUser(username) {
   if (!username) {
-    const err = new Error("USERNAME_REQUIRED");
+    const err = new Error("Username is required");
+    err.code = 'BAD_REQUEST';
     throw err;
   }
 
@@ -22,7 +23,8 @@ async function createUser(username) {
     return user;
   } catch (err) {
     if (err.code === 11000) {
-      const dupErr = new Error("DUPLICATE_CHARACTER_STRING");
+      const dupErr = new Error("Generated ID already exists, please try again");
+      dupErr.code = 'DUPLICATE';
       throw dupErr;
     }
     throw err;
@@ -34,14 +36,16 @@ async function createUser(username) {
  */
 async function loginByCharacterString(characterString) {
   if (!characterString) {
-    const err = new Error("CHARACTER_STRING_REQUIRED");
+    const err = new Error("16 character string is required");
+    err.code = 'BAD_REQUEST';
     throw err;
   }
 
   const user = await User.findOne({ characterString });
 
   if (!user) {
-    const err = new Error("USER_NOT_FOUND");
+    const err = new Error("User with this character string does not exist");
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
@@ -53,11 +57,13 @@ async function loginByCharacterString(characterString) {
  */
 async function updateUsername(characterString, newUsername) {
   if (!characterString) {
-    const err = new Error("CHARACTER_STRING_REQUIRED");
+    const err = new Error("16 character string is required");
+    err.code = 'BAD_REQUEST';
     throw err;
   }
   if (!newUsername) {
-    const err = new Error("NEW_USERNAME_REQUIRED");
+    const err = new Error("newUsername is required");
+    err.code = 'BAD_REQUEST';
     throw err;
   }
 
@@ -68,7 +74,8 @@ async function updateUsername(characterString, newUsername) {
   );
 
   if (!updatedUser) {
-    const err = new Error("USER_NOT_FOUND");
+    const err = new Error("User not found");
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
@@ -80,14 +87,16 @@ async function updateUsername(characterString, newUsername) {
  */
 async function deleteUserByCharacterString(characterString) {
   if (!characterString) {
-    const err = new Error("CHARACTER_STRING_REQUIRED");
+    const err = new Error("16 character string is required");
+    err.code = 'BAD_REQUEST';
     throw err;
   }
 
   const deletedUser = await User.findOneAndDelete({ characterString });
 
   if (!deletedUser) {
-    const err = new Error("USER_NOT_FOUND");
+    const err = new Error("User with this character string does not exist");
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
