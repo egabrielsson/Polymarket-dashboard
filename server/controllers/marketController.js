@@ -52,7 +52,7 @@ async function createMarketHandler(req, res) {
     });
   } catch (err) {
     // Handle 409 Conflict (duplicate polymarketId)
-    if (err.status === 409) {
+    if (err && err.code === 'DUPLICATE') {
       return res.status(409).json({
         error: err.message,
       });
@@ -126,7 +126,7 @@ async function getMarketHandler(req, res) {
     });
   } catch (err) {
     // Handle 404 Not Found when market doesn't exist
-    if (err.status === 404) {
+    if (err && err.code === 'NOT_FOUND') {
       return res.status(404).json({
         error: err.message,
       });
@@ -159,7 +159,7 @@ async function updateMarketHandler(req, res) {
     });
   } catch (err) {
     // Handle 404 Not Found when market doesn't exist
-    if (err.status === 404) {
+    if (err && err.code === 'NOT_FOUND') {
       return res.status(404).json({
         error: err.message,
       });
@@ -186,7 +186,7 @@ async function deleteMarketHandler(req, res) {
     return res.status(204).send();
   } catch (err) {
     // Handle 404 Not Found when market doesn't exist
-    if (err.status === 404) {
+    if (err && err.code === 'NOT_FOUND') {
       return res.status(404).json({
         error: err.message,
       });

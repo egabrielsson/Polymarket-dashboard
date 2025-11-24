@@ -41,9 +41,9 @@ async function createMarket(polymarketId, categoryId = null) {
   // as per good API design practices.
   const existing = await Market.findOne({ polymarketId });
   if (existing) {
-    const error = new Error(`Market with polymarketId already exists`);
-    error.status = 409; // HTTP Conflict status code
-    throw error;
+    const err = new Error(`Market with polymarketId already exists`);
+    err.code = 'DUPLICATE';
+    throw err;
   }
 
   // Step 3: Create and save Market document with the Polymarket data
@@ -87,9 +87,9 @@ async function listMarkets(filters = {}) {
 async function getMarket(marketId) {
   const market = await Market.findById(marketId);
   if (!market) {
-    const error = new Error("Market not found");
-    error.status = 404;
-    throw error;
+    const err = new Error("Market not found");
+    err.code = 'NOT_FOUND';
+    throw err;
   }
   return market;
 }
@@ -120,9 +120,9 @@ async function updateMarket(marketId, updates) {
   });
 
   if (!market) {
-    const error = new Error("Market not found");
-    error.status = 404;
-    throw error;
+    const err = new Error("Market not found");
+    err.code = 'NOT_FOUND';
+    throw err;
   }
 
   return market;
@@ -134,9 +134,9 @@ async function deleteMarket(marketId) {
   const market = await Market.findByIdAndDelete(marketId);
 
   if (!market) {
-    const error = new Error("Market not found");
-    error.status = 404;
-    throw error;
+    const err = new Error("Market not found");
+    err.code = 'NOT_FOUND';
+    throw err;
   }
 
   return market;
