@@ -58,6 +58,10 @@ app.use("/api/polymarket", polymarketRoutes);
 const watchlistsRoutes = require('./routes/watchlists');
 app.use('/api', watchlistsRoutes);
 
+// Category routes
+const categoryRoutes = require('./routes/category');
+app.use('/api/categories', categoryRoutes);
+
 // Market routes (includes nested note routes)
 const marketRoutes = require("./routes/market");
 app.use("/api/markets", marketRoutes);
