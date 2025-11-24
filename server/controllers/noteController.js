@@ -119,14 +119,14 @@ async function updateNoteHandler(req, res) {
     });
   } catch (err) {
     // Handle 404 Not Found
-    if (err.status === 404) {
+    if (err && err.code === 'NOT_FOUND') {
       return res.status(404).json({
         error: err.message,
       });
     }
 
     // Handle 403 Forbidden (not the owner)
-    if (err.status === 403) {
+    if (err && err.code === 'FORBIDDEN') {
       return res.status(403).json({
         error: err.message,
       });
@@ -163,14 +163,14 @@ async function deleteNoteHandler(req, res) {
     return res.status(204).send();
   } catch (err) {
     // Handle 404 Not Found
-    if (err.status === 404) {
+    if (err && err.code === 'NOT_FOUND') {
       return res.status(404).json({
         error: err.message,
       });
     }
 
     // Handle 403 Forbidden (not the owner)
-    if (err.status === 403) {
+    if (err && err.code === 'FORBIDDEN') {
       return res.status(403).json({
         error: err.message,
       });

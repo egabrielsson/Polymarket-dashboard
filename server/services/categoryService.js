@@ -6,7 +6,7 @@ const Category = require("../models/Category");
 async function createCategory(userId, name) {
     if (!name) {
         const err = new Error("Category name is required");
-        err.status = 400;
+        err.code = 'BAD_REQUEST';
         throw err;
     }
     const category = await Category.create({ name, userId: userId || null });
@@ -18,14 +18,14 @@ async function createCategory(userId, name) {
 async function updateCategory(userId, categoryId, name) {
     if (!name) {
         const err = new Error("Category name is required");
-        err.status = 400;
+        err.code = 'BAD_REQUEST';
         throw err;
     }
 
     const category = await Category.findById(categoryId);
         if (!category) {
             const err = new Error("Category not found");
-            err.status = 404;
+            err.code = 'NOT_FOUND';
             throw err;
         }
 
@@ -34,12 +34,12 @@ async function updateCategory(userId, categoryId, name) {
     if (category.userId) {
             if (category.userId.toString() !== userId.toString()) {
                 const err = new Error("You do not own this category");
-                err.status = 403;
+                err.code = 'FORBIDDEN';
                 throw err;
             }
         } else {
             const err = new Error("Global categories cannot be edited");
-            err.status = 403;
+            err.code = 'FORBIDDEN';
             throw err;
         }
 
@@ -53,7 +53,7 @@ async function deleteCategory(userId, categoryId) {
     const category = await Category.findById(categoryId);
         if (!category) {
             const err = new Error("Category not found");
-            err.status = 404;
+            err.code = 'NOT_FOUND';
             throw err;
         }
   // Check ownership: user-owned categories can only be deleted by their owner
@@ -61,12 +61,12 @@ async function deleteCategory(userId, categoryId) {
         if (category.userId) {
             if (category.userId.toString() !== userId.toString()) {
                 const err = new Error("You do not own this category");
-                err.status = 403;
+                err.code = 'FORBIDDEN';
                 throw err;
             }
             } else {
             const err = new Error("Global categories cannot be deleted");
-            err.status = 403;
+            err.code = 'FORBIDDEN';
             throw err;
         }
 

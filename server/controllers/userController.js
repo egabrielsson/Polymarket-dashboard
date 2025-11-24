@@ -7,6 +7,7 @@ const {
   loginByCharacterString,
   updateUsername,
   deleteUserByCharacterString,
+  getAllUsers,
 } = require("../services/userService");
 
 // POST /api/users
@@ -24,16 +25,14 @@ async function createUserHandler(req, res) {
       },
     });
   } catch (err) {
-    if (err.message === "USERNAME_REQUIRED") {
-      return res.status(400).json({ message: "Username is required" });
+    if (err && err.code === 'BAD_REQUEST') {
+      return res.status(400).json({ error: err.message });
     }
-    if (err.message === "DUPLICATE_CHARACTER_STRING") {
-      return res
-        .status(409)
-        .json({ message: "Generated ID already exists, please try again" });
+    if (err && err.code === 'DUPLICATE') {
+      return res.status(409).json({ error: err.message });
     }
     console.error("Error creating user:", err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -50,18 +49,14 @@ async function loginHandler(req, res) {
       username: user.username,
     });
   } catch (err) {
-    if (err.message === "CHARACTER_STRING_REQUIRED") {
-      return res
-        .status(400)
-        .json({ message: "16 character string is required" });
+    if (err && err.code === 'BAD_REQUEST') {
+      return res.status(400).json({ error: err.message });
     }
-    if (err.message === "USER_NOT_FOUND") {
-      return res
-        .status(404)
-        .json({ message: "User with this character string does not exist" });
+    if (err && err.code === 'NOT_FOUND') {
+      return res.status(404).json({ error: err.message });
     }
     console.error("Error logging in user:", err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -80,19 +75,14 @@ async function updateUsernameHandler(req, res) {
       username: updatedUser.username,
     });
   } catch (err) {
-    if (err.message === "CHARACTER_STRING_REQUIRED") {
-      return res
-        .status(400)
-        .json({ message: "16 character string is required" });
+    if (err && err.code === 'BAD_REQUEST') {
+      return res.status(400).json({ error: err.message });
     }
-    if (err.message === "NEW_USERNAME_REQUIRED") {
-      return res.status(400).json({ message: "newUsername is required" });
-    }
-    if (err.message === "USER_NOT_FOUND") {
-      return res.status(404).json({ message: "User not found" });
+    if (err && err.code === 'NOT_FOUND') {
+      return res.status(404).json({ error: err.message });
     }
     console.error("Error updating username:", err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -110,18 +100,29 @@ async function deleteUserHandler(req, res) {
       username: deletedUser.username,
     });
   } catch (err) {
-    if (err.message === "CHARACTER_STRING_REQUIRED") {
-      return res
-        .status(400)
-        .json({ message: "16 character string is required" });
+    if (err && err.code === 'BAD_REQUEST') {
+      return res.status(400).json({ error: err.message });
     }
-    if (err.message === "USER_NOT_FOUND") {
-      return res
-        .status(404)
-        .json({ message: "User with this character string does not exist" });
+    if (err && err.code === 'NOT_FOUND') {
+      return res.status(404).json({ error: err.message });
     }
     console.error("Error deleting user:", err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
+// GET /api/users
+async function getAllUsersHandler(req, res) {
+  try {
+    const users = await getAllUsers();
+
+    return res.status(200).json({
+      success: true,
+      data: { users },
+    });
+  } catch (err) {
+    console.error("Error getting all users:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -130,4 +131,5 @@ module.exports = {
   loginHandler,
   updateUsernameHandler,
   deleteUserHandler,
+  getAllUsersHandler,
 };
