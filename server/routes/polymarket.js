@@ -12,33 +12,26 @@ const {
   listMarkets,
   getMarketsByCategory,
   getTechMarketsHandler,
-  getTechMarketsDebug,
 } = require("../controllers/polymarketController");
 
 // a constant router to define the routes
 const router = express.Router();
 
-// GET /api/polymarket/markets
+// GET /api/polymarkets/markets
 // List all markets or search with optional query and pagination
 // Query params: ?search=<term>&limit=50&offset=0
 router.get("/markets", listMarkets);
 
-// GET /api/polymarket/markets/:pmId
+// GET /api/polymarkets/markets/:pmId
 // Get a single market by Polymarket ID
 router.get("/markets/:pmId", getMarket);
 
-// GET /api/polymarket/tech-markets/debug
-// Get Tech category markets and save to JSON file for inspection
-// Query params: ?limit=100
-
-router.get("/tech-markets/debug", getTechMarketsDebug);
-
-// GET /api/polymarket/tech-markets
+// GET /api/polymarkets/tech-markets
 // Get Tech category markets only (convenience endpoint)
 // Query params: ?limit=100
 router.get("/tech-markets", getTechMarketsHandler);
 
-// GET /api/polymarket/categories/:slug/markets
+// GET /api/polymarkets/categories/:slug/markets
 // Get markets for a specific category (tag slug)
 // Query params: ?limit=100
 
