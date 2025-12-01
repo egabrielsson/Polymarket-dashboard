@@ -3,28 +3,30 @@ const User = require("../models/User");
 const generateId = require("../IDcreation");
 
 /**
- * Create a new user with a generated 16-character characterString
+ * Create a new user with a generated 16-character id.
+ * The id is stored in the `characterString` field on the User model.
  */
 async function createUser(username) {
   if (!username) {
     const err = new Error("Username is required");
-    err.code = 'BAD_REQUEST';
+    err.code = "BAD_REQUEST";
     throw err;
   }
 
   try {
-    const characterString = generateId();
+    const id = generateId(); // 16-char id
 
     const user = await User.create({
-      characterString,
+      characterString: id, // stored in characterString
       username,
     });
 
     return user;
   } catch (err) {
+    // Duplicate key error from MongoDB
     if (err.code === 11000) {
-      const dupErr = new Error("Generated ID already exists, please try again");
-      dupErr.code = 'DUPLICATE';
+      const dupErr = new Error("Generated id already exists, please try again");
+      dupErr.code = "DUPLICATE";
       throw dupErr;
     }
     throw err;
@@ -32,20 +34,21 @@ async function createUser(username) {
 }
 
 /**
- * "Login" by 16-character characterString
+ * "Login" by 16-character id
+ * (function name kept for compatibility)
  */
-async function loginByCharacterString(characterString) {
-  if (!characterString) {
-    const err = new Error("16 character string is required");
-    err.code = 'BAD_REQUEST';
+async function loginByCharacterString(id) {
+  if (!id) {
+    const err = new Error("16 character id is required");
+    err.code = "BAD_REQUEST";
     throw err;
   }
 
-  const user = await User.findOne({ characterString });
+  const user = await User.findOne({ characterString: id });
 
   if (!user) {
-    const err = new Error("User with this character string does not exist");
-    err.code = 'NOT_FOUND';
+    const err = new Error("User with this id does not exist");
+    err.code = "NOT_FOUND";
     throw err;
   }
 
@@ -53,29 +56,31 @@ async function loginByCharacterString(characterString) {
 }
 
 /**
- * Update username for a given characterString
+ * Update username for a given id.
+ * The id is stored in `characterString`.
  */
-async function updateUsername(characterString, newUsername) {
-  if (!characterString) {
-    const err = new Error("16 character string is required");
-    err.code = 'BAD_REQUEST';
+async function updateUsername(id, newUsername) {
+  if (!id) {
+    const err = new Error("16 character id is required");
+    err.code = "BAD_REQUEST";
     throw err;
   }
+
   if (!newUsername) {
     const err = new Error("newUsername is required");
-    err.code = 'BAD_REQUEST';
+    err.code = "BAD_REQUEST";
     throw err;
   }
 
   const updatedUser = await User.findOneAndUpdate(
-    { characterString },
+    { characterString: id },
     { $set: { username: newUsername } },
     { new: true }
   );
 
   if (!updatedUser) {
     const err = new Error("User not found");
-    err.code = 'NOT_FOUND';
+    err.code = "NOT_FOUND";
     throw err;
   }
 
@@ -83,20 +88,21 @@ async function updateUsername(characterString, newUsername) {
 }
 
 /**
- * Delete user by characterString
+ * Delete user by id.
+ * (function name kept for compatibility)
  */
-async function deleteUserByCharacterString(characterString) {
-  if (!characterString) {
-    const err = new Error("16 character string is required");
-    err.code = 'BAD_REQUEST';
+async function deleteUserByCharacterString(id) {
+  if (!id) {
+    const err = new Error("16 character id is required");
+    err.code = "BAD_REQUEST";
     throw err;
   }
 
-  const deletedUser = await User.findOneAndDelete({ characterString });
+  const deletedUser = await User.findOneAndDelete({ characterString: id });
 
   if (!deletedUser) {
-    const err = new Error("User with this character string does not exist");
-    err.code = 'NOT_FOUND';
+    const err = new Error("User with this id does not exist");
+    err.code = "NOT_FOUND";
     throw err;
   }
 
@@ -104,10 +110,11 @@ async function deleteUserByCharacterString(characterString) {
 }
 
 /**
- * Get all users
+ * Get all users.
+ * Returns _id, username, and characterString (the stored id).
  */
 async function getAllUsers() {
-  const users = await User.find({}).select('_id username characterString');
+  const users = await User.find({}).select("_id username characterString");
   return users;
 }
 
