@@ -26,19 +26,19 @@ router.post("/users", createUserHandler);
 
 /**
  * POST /api/sessions
- * Body: { "characterString": "A1B2C3D4E5F6G7H8" }
+ * Body: { "id": "A1B2C3D4E5F6G7H8" }  // 16-character id
  */
 router.post("/sessions", loginHandler);
 
 /**
- * PATCH /api/users/:characterString
+ * PATCH /api/users/:id
  * Body: { "newUsername": "NewName" }
  */
-router.patch("/users/:characterString", updateUsernameHandler);
+router.patch("/users/:id", updateUsernameHandler);
 
 /**
- * DELETE /api/users/:characterString
+ * DELETE /api/users/:id
  */
-router.delete("/users/:characterString", deleteUserHandler);
+router.delete("/users/:id", deleteUserHandler);
 
 module.exports = router;
