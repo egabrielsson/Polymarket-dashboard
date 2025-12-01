@@ -1,12 +1,23 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link>
-    </div>
-    <!-- Render the content of the current page view -->
-    <router-view/>
+    <!-- Temporarily focusing on the Browse Markets experience 
+    we just add the other views that we want to display here
+    -->
+    <BrowseMarkets />
+    <!-- <router-view/> -->
   </div>
 </template>
+
+<script>
+import BrowseMarkets from './views/browseMarkets.vue'
+
+export default {
+  name: 'App',
+  components: {
+    BrowseMarkets
+  }
+}
+</script>
 
 <style>
 #app {
