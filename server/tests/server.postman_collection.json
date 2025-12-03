@@ -253,7 +253,7 @@
             "url": {
               "raw": "{{host}}/api/polymarkets/markets?limit=20",
               "host": ["{{host}}"],
-              "path": ["api", "polymarket", "markets"],
+              "path": ["api", "polymarkets", "markets"],
               "query": [{ "key": "limit", "value": "20" }]
             }
           },
@@ -290,7 +290,7 @@
             "url": {
               "raw": "{{host}}/api/polymarkets/markets/516950",
               "host": ["{{host}}"],
-              "path": ["api", "polymarket", "markets", "516950"]
+              "path": ["api", "polymarkets", "markets", "516950"]
             }
           },
           "response": []
@@ -323,7 +323,7 @@
             "url": {
               "raw": "{{host}}/api/polymarkets/tech-markets?limit=10",
               "host": ["{{host}}"],
-              "path": ["api", "polymarket", "tech-markets"],
+              "path": ["api", "polymarkets", "tech-markets"],
               "query": [{ "key": "limit", "value": "10" }]
             }
           },
