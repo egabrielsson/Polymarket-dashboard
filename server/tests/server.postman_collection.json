@@ -206,6 +206,33 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "6. DELETE /api/users (collection)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteAllUsers",
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users",
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -1085,6 +1112,33 @@
               "raw": "{{host}}/api/users/{{watchlistCharacterString}}",
               "host": ["{{host}}"],
               "path": ["api", "users", "{{watchlistCharacterString}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26. DELETE /api/markets (collection)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteAllMarkets",
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/markets",
+              "host": ["{{host}}"],
+              "path": ["api", "markets"]
             }
           },
           "response": []

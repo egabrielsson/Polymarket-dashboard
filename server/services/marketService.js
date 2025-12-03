@@ -142,6 +142,11 @@ async function deleteMarket(marketId) {
   return market;
 }
 
+// Delete the entire markets collection
+async function deleteAllMarkets() {
+  await Market.deleteMany({});
+}
+
 // Export the service functions
 module.exports = {
   createMarket,
@@ -149,4 +154,5 @@ module.exports = {
   getMarket,
   updateMarket,
   deleteMarket,
+  deleteAllMarkets,
 };

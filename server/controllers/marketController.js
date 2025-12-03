@@ -9,6 +9,7 @@ const {
   getMarket,
   updateMarket,
   deleteMarket,
+  deleteAllMarkets,
 } = require("../services/marketService");
 
 /**
@@ -199,6 +200,19 @@ async function deleteMarketHandler(req, res) {
   }
 }
 
+// Delete the entire markets collection
+async function deleteAllMarketsHandler(req, res) {
+  try {
+    await deleteAllMarkets();
+    return res.status(204).send();
+  } catch (err) {
+    console.error("Error deleting all markets:", err.message);
+    return res.status(500).json({
+      error: "Failed to delete all markets",
+    });
+  }
+}
+
 // export the controller handlers
 module.exports = {
   createMarketHandler,
@@ -206,4 +220,5 @@ module.exports = {
   getMarketHandler,
   updateMarketHandler,
   deleteMarketHandler,
+  deleteAllMarketsHandler,
 };
