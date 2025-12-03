@@ -103,6 +103,11 @@ async function deleteUserByCharacterString(characterString) {
   return deletedUser;
 }
 
+// Delete entire users collection
+async function deleteAllUsers() {
+  await User.deleteMany({});
+}
+
 /**
  * Get all users
  */
@@ -117,4 +122,5 @@ module.exports = {
   updateUsername,
   deleteUserByCharacterString,
   getAllUsers,
+  deleteAllUsers,
 };
