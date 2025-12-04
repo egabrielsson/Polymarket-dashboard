@@ -38,6 +38,21 @@
             {{ option.name }}
           </option>
         </select>
+        <div class="d-flex justify-content-end mt-2">
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            @click="emitRemove(market)"
+            :disabled="isRemoving(market)"
+          >
+            <span
+              v-if="isRemoving(market)"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+            />
+            Remove
+          </button>
+        </div>
       </div>
       <p v-if="!markets.length" class="text-muted small mb-0">No markets added yet.</p>
     </div>
@@ -59,6 +74,10 @@ export default {
     allCategories: {
       type: Array,
       default: () => []
+    },
+    removingMarkets: {
+      type: Object,
+      default: () => ({})
     }
   },
   computed: {
@@ -83,6 +102,15 @@ export default {
         fromCategoryId: this.category._id,
         categoryId: targetCategoryId || null
       })
+    },
+    isRemoving(market) {
+      if (!market) {
+        return false
+      }
+      return Boolean(this.removingMarkets[market._id])
+    },
+    emitRemove(market) {
+      this.$emit('remove-market', market._id)
     }
   }
 }
