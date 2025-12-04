@@ -55,7 +55,9 @@
           :category="category"
           :markets="category.markets"
           :all-categories="categoryOptions"
+          :removing-markets="removingMarkets"
           @update-category="handleAssignCategory"
+          @remove-market="handleRemoveMarket"
         />
       </div>
     </div>
@@ -79,7 +81,8 @@ export default {
       loadingCategories: false,
       creatingCategory: false,
       categoryError: '',
-      activeUserId: DEFAULT_USER_ID
+      activeUserId: DEFAULT_USER_ID,
+      removingMarkets: {}
     }
   },
   computed: {
@@ -214,6 +217,33 @@ export default {
           err?.response?.data?.error ||
           'Unable to update market category right now.'
         await this.loadData()
+      }
+    },
+    removeMarketLocally(marketId) {
+      return this.categories.map((category) => ({
+        ...category,
+        markets: category.markets.filter((market) => market._id !== marketId)
+      }))
+    },
+    async handleRemoveMarket(marketId) {
+      if (!this.activeUserId) {
+        return
+      }
+
+      this.removingMarkets[marketId] = true
+      this.categoryError = ''
+      try {
+        await Api.delete(`/users/${this.activeUserId}/watchlists/${marketId}`)
+        this.categories = this.removeMarketLocally(marketId)
+      } catch (err) {
+        console.error('Failed to remove market from watchlist', err)
+        this.categoryError =
+          err?.response?.data?.error ||
+          err.message ||
+          'Unable to remove market right now.'
+        await this.loadData()
+      } finally {
+        this.removingMarkets[marketId] = false
       }
     },
     moveMarketLocally(marketId, fromCategoryId, targetCategoryId) {
