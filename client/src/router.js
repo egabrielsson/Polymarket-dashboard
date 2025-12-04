@@ -4,10 +4,12 @@ import Home from './views/Home.vue'
 import BrowseMarkets from './views/browseMarkets.vue'
 import Account from './views/Account.vue'
 import WatchList from './views/WatchList.vue'
-import Login from './view/Login.vue'
+import Login from './views/Login.vue'
+import Register from './views/Register.vue'
 
 const routes = [
-  {path: '/', name: 'login', component: Login},
+  { path: '/', name: 'login', component: Login},
+  { path: '/register', name: 'register', component: Register},
   { path: '/home', name: 'home', component: Home },
   { path: '/account', name: 'account', component: Account },
   { path: '/markets', name: 'browseMarkets', component: BrowseMarkets },

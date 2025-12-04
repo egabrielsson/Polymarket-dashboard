@@ -36,6 +36,15 @@
       >
         Watchlist
       </RouterLink>
+
+      <RouterLink
+        class="nav-link sidebar__link text-white text-center text-md-start flex-fill"
+        active-class="sidebar__link--active"
+        :to="{name:'login'}" 
+      >
+        Login
+      </RouterLink>
+      
     </nav>
   </aside>
 </template>
