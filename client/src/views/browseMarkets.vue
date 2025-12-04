@@ -47,6 +47,10 @@
       </b-row>
     </b-form>
 
+    <b-alert v-if="!activeUserId" variant="warning" show class="mb-4">
+      Set <code>VITE_TEST_USER_ID</code> in your <code>.env</code> to enable watchlist features.
+    </b-alert>
+
     <div v-if="loading" class="text-muted">Loading markets…</div>
     <div v-else-if="error" class="text-danger">{{ error }}</div>
 
@@ -59,7 +63,25 @@
         lg="4"
         xl="3"
       >
-        <MarketCard :market="market" />
+        <div class="position-relative">
+          <MarketCard :market="market" />
+          <div class="mt-2">
+            <b-button
+              variant="primary"
+              size="sm"
+              class="w-100"
+              @click="addToWatchlist(market)"
+              :disabled="addingToWatchlist[market.id] || !activeUserId"
+            >
+              <span
+                v-if="addingToWatchlist[market.id]"
+                class="spinner-border spinner-border-sm me-2"
+                role="status"
+              />
+              Add to Watchlist
+            </b-button>
+          </div>
+        </div>
       </b-col>
     </b-row>
   </b-container>
@@ -69,6 +91,8 @@
 import MarketCard from '@/components/MarketCard.vue'
 import { Api } from '@/Api'
 import { normalizePolymarketMarket } from '@/utils/marketNormalizer'
+
+const DEFAULT_USER_ID = import.meta.env.VITE_TEST_USER_ID || ''
 
 export default {
   name: 'BrowseMarkets',
@@ -82,7 +106,9 @@ export default {
       error: '',
       filters: {
         limit: 12
-      }
+      },
+      activeUserId: DEFAULT_USER_ID,
+      addingToWatchlist: {}
     }
   },
   mounted() {
@@ -104,6 +130,55 @@ export default {
         this.error = 'Unable to load markets right now.'
       } finally {
         this.loading = false
+      }
+    },
+    async addToWatchlist(market) {
+      if (!this.activeUserId) {
+        alert('Please set VITE_TEST_USER_ID in your .env file')
+        return
+      }
+
+      this.addingToWatchlist[market.id] = true
+      try {
+        let savedMarketId = null
+
+        // First, try to save the market to database (gets MongoDB _id)
+        try {
+          const { data: marketData } = await Api.post('/markets', {
+            polymarketId: market.id,
+            categoryId: null
+          })
+          savedMarketId = marketData?.data?._id
+        } catch (marketErr) {
+          // If market already exists (409), fetch it by polymarketId
+          if (marketErr?.response?.status === 409) {
+            const { data } = await Api.get('/markets')
+            const markets = data?.data || []
+            const existingMarket = markets.find(
+              (m) => m.polymarketId === market.id
+            )
+            if (existingMarket) {
+              savedMarketId = existingMarket._id
+            } else {
+              throw new Error('Market exists but could not be found')
+            }
+          } else {
+            throw marketErr
+          }
+        }
+
+        // Then add the saved market to watchlist using MongoDB _id
+        await Api.post(`/users/${this.activeUserId}/watchlists`, {
+          marketId: savedMarketId
+        })
+        alert(`Added "${market.title}" to your watchlist!`)
+      } catch (err) {
+        console.error('Failed to add to watchlist', err)
+        alert(
+          err?.response?.data?.error || err.message || 'Failed to add to watchlist. Try again.'
+        )
+      } finally {
+        this.addingToWatchlist[market.id] = false
       }
     }
   }
