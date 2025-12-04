@@ -1,10 +1,11 @@
 // services/userService.js
 const User = require("../models/User");
-const generateId = require("../IDcreation");
+const generateId = require("../utils/IDcreation");
 
 /**
  * Create a new user with a generated 16-character id.
- * The id is stored in the `characterString` field on the User model.
+ * Note: The id is stored in the database field named `characterString` for historical reasons,
+ * but conceptually this is the user's unique identifier.
  */
 async function createUser(username) {
   if (!username) {
@@ -14,10 +15,10 @@ async function createUser(username) {
   }
 
   try {
-    const id = generateId(); // 16-char id
+    const id = generateId(); // 16-character unique id
 
     const user = await User.create({
-      characterString: id, // stored in characterString
+      characterString: id, // Database field name (historical), stores the user id
       username,
     });
 
@@ -34,10 +35,9 @@ async function createUser(username) {
 }
 
 /**
- * "Login" by 16-character id
- * (function name kept for compatibility)
+ * Login by 16-character user id
  */
-async function loginByCharacterString(id) {
+async function loginById(id) {
   if (!id) {
     const err = new Error("16 character id is required");
     err.code = "BAD_REQUEST";
@@ -56,8 +56,7 @@ async function loginByCharacterString(id) {
 }
 
 /**
- * Update username for a given id.
- * The id is stored in `characterString`.
+ * Update username for a given user id
  */
 async function updateUsername(id, newUsername) {
   if (!id) {
@@ -88,10 +87,9 @@ async function updateUsername(id, newUsername) {
 }
 
 /**
- * Delete user by id.
- * (function name kept for compatibility)
+ * Delete user by id
  */
-async function deleteUserByCharacterString(id) {
+async function deleteUserById(id) {
   if (!id) {
     const err = new Error("16 character id is required");
     err.code = "BAD_REQUEST";
@@ -110,8 +108,15 @@ async function deleteUserByCharacterString(id) {
 }
 
 /**
+ * Delete entire users collection
+ */
+async function deleteAllUsers() {
+  await User.deleteMany({});
+}
+
+/**
  * Get all users.
- * Returns _id, username, and characterString (the stored id).
+ * Returns _id, username, and id (stored in characterString field).
  */
 async function getAllUsers() {
   const users = await User.find({}).select("_id username characterString");
@@ -120,8 +125,9 @@ async function getAllUsers() {
 
 module.exports = {
   createUser,
-  loginByCharacterString,
+  loginById,
   updateUsername,
-  deleteUserByCharacterString,
+  deleteUserById,
   getAllUsers,
+  deleteAllUsers,
 };

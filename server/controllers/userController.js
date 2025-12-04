@@ -4,10 +4,11 @@
 
 const {
   createUser,
-  loginByCharacterString,
+  loginById,
   updateUsername,
-  deleteUserByCharacterString,
+  deleteUserById,
   getAllUsers,
+  deleteAllUsers,
 } = require("../services/userService");
 
 // POST /api/users
@@ -19,7 +20,7 @@ async function createUserHandler(req, res) {
     return res.status(201).json({
       message: "User created",
       user: {
-        id: user.characterString, // expose as `id`
+        id: user.characterString, // user id (stored in characterString field) exposed as `id`
         username: user.username,
       },
     });
@@ -38,12 +39,12 @@ async function createUserHandler(req, res) {
 // POST /api/sessions
 async function loginHandler(req, res) {
   try {
-    const { id } = req.body; // previously: characterString
-    const user = await loginByCharacterString(id);
+    const { id } = req.body; // 16-character user id
+    const user = await loginById(id);
 
     return res.status(200).json({
       message: "Login successful",
-      userId: user.characterString, // still the same underlying field
+      userId: user.characterString, // user id (stored in characterString field)
       username: user.username,
     });
   } catch (err) {
@@ -61,14 +62,14 @@ async function loginHandler(req, res) {
 // PATCH /api/users/:id
 async function updateUsernameHandler(req, res) {
   try {
-    const { id } = req.params; // previously: characterString
+    const { id } = req.params; // 16-character user id
     const { newUsername } = req.body;
 
     const updatedUser = await updateUsername(id, newUsername);
 
     return res.status(200).json({
       message: "Username updated successfully",
-      userId: updatedUser.characterString,
+      userId: updatedUser.characterString, // user id (stored in characterString field)
       username: updatedUser.username,
     });
   } catch (err) {
@@ -86,13 +87,13 @@ async function updateUsernameHandler(req, res) {
 // DELETE /api/users/:id
 async function deleteUserHandler(req, res) {
   try {
-    const { id } = req.params; // previously: characterString
+    const { id } = req.params; // 16-character user id
 
-    const deletedUser = await deleteUserByCharacterString(id);
+    const deletedUser = await deleteUserById(id);
 
     return res.status(200).json({
       message: "Deletion successful",
-      userId: deletedUser.characterString,
+      userId: deletedUser.characterString, // user id (stored in characterString field)
       username: deletedUser.username,
     });
   } catch (err) {
@@ -107,14 +108,24 @@ async function deleteUserHandler(req, res) {
   }
 }
 
+// DELETE /api/users
+async function deleteAllUsersHandler(req, res) {
+  try {
+    await deleteAllUsers();
+    return res.status(204).send();
+  } catch (err) {
+    console.error("Error deleting all users:", err);
+    return res.status(500).json({ error: "Failed to delete users" });
+  }
+}
 // GET /api/users
 async function getAllUsersHandler(req, res) {
   try {
     const users = await getAllUsers();
 
-    // Map internal `characterString` to external `id`
+    // Map user id (stored in characterString field) to external `id`
     const serializedUsers = users.map((user) => ({
-      id: user.characterString,
+      id: user.characterString, // user id exposed as `id`
       username: user.username,
     }));
 
@@ -134,4 +145,5 @@ module.exports = {
   updateUsernameHandler,
   deleteUserHandler,
   getAllUsersHandler,
+  deleteAllUsersHandler,
 };

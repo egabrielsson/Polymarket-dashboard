@@ -8,6 +8,7 @@ const {
   updateUsernameHandler,
   deleteUserHandler,
   getAllUsersHandler,
+  deleteAllUsersHandler,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -35,6 +36,11 @@ router.post("/sessions", loginHandler);
  * Body: { "newUsername": "NewName" }
  */
 router.patch("/users/:id", updateUsernameHandler);
+
+/**
+ * DELETE /api/users
+ */
+router.delete("/users", deleteAllUsersHandler);
 
 /**
  * DELETE /api/users/:id

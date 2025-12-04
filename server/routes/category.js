@@ -4,12 +4,16 @@
 
 const express = require("express");
 const {
+  listCategoriesHandler,
   createCategoryHandler,
   updateCategoryHandler,
   deleteCategoryHandler,
 } = require("../controllers/categoryController");
 
 const router = express.Router();
+
+// GET /api/categories
+router.get("/", listCategoriesHandler);
 
 // POST /api/categories
 router.post("/", createCategoryHandler);
