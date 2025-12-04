@@ -7,6 +7,9 @@
         <h1 class="display-6 fw-semibold mb-0">Watchlist</h1>
         <p class="text-muted mb-0">Organize your saved markets by category</p>
       </div>
+    </div>
+
+    <div class="mb-3 d-flex flex-column gap-2">
       <div class="d-flex flex-wrap gap-2">
         <b-button
           variant="outline-secondary"
@@ -28,6 +31,35 @@
           Create Category
         </b-button>
       </div>
+      <div
+        v-if="adminDeleteToken"
+        class="d-flex flex-wrap gap-2 align-items-center"
+      >
+        <b-button
+          variant="outline-danger"
+          class="border-2"
+          :disabled="deletingCollection"
+          @click="handleDeleteMarketsCollection"
+        >
+          <span
+            v-if="deletingCollection"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          />
+          Delete markets collection
+        </b-button>
+      </div>
+      <b-alert
+        v-if="adminSuccess"
+        variant="success"
+        show
+        class="mb-0"
+      >
+        {{ adminSuccess }}
+      </b-alert>
+      <b-alert v-if="adminError" variant="danger" show class="mb-0">
+        {{ adminError }}
+      </b-alert>
     </div>
 
     <b-alert v-if="!activeUserId" variant="warning" show class="mb-4">
@@ -69,6 +101,7 @@ import CategoryColumn from '@/components/CategoryColumn.vue'
 import { Api } from '@/Api'
 
 const DEFAULT_USER_ID = import.meta.env.VITE_TEST_USER_ID || ''
+const ADMIN_DELETE_TOKEN = import.meta.env.VITE_ADMIN_DELETE_TOKEN || ''
 
 export default {
   name: 'WatchListView',
@@ -82,7 +115,10 @@ export default {
       creatingCategory: false,
       categoryError: '',
       activeUserId: DEFAULT_USER_ID,
-      removingMarkets: {}
+      removingMarkets: {},
+      deletingCollection: false,
+      adminError: '',
+      adminSuccess: ''
     }
   },
   computed: {
@@ -91,6 +127,9 @@ export default {
         _id,
         name
       }))
+    },
+    adminDeleteToken() {
+      return ADMIN_DELETE_TOKEN
     }
   },
   created() {
@@ -131,6 +170,7 @@ export default {
       return data?.data?.watchlist || []
     },
     combineCategoriesWithMarkets(categories, markets) {
+      const sanitizedMarkets = markets.filter(Boolean)
       const fallbackKey = 'uncategorized'
       const grouped = new Map()
 
@@ -146,7 +186,7 @@ export default {
         })
       }
 
-      markets.forEach((market) => {
+      sanitizedMarkets.forEach((market) => {
         const rawCategoryId = market.categoryId || fallbackKey
         const categoryId =
           typeof rawCategoryId === 'object' && rawCategoryId !== null
@@ -168,6 +208,33 @@ export default {
       })
 
       return Array.from(grouped.values())
+    },
+    async handleDeleteMarketsCollection() {
+      if (!this.adminDeleteToken) {
+        this.adminError = 'Admin delete token is not configured.'
+        return
+      }
+
+      this.deletingCollection = true
+      this.adminError = ''
+      this.adminSuccess = ''
+      try {
+        await Api.delete('/markets', {
+          headers: {
+            'x-admin-token': this.adminDeleteToken
+          }
+        })
+        this.adminSuccess = 'Markets collection deleted; refreshing data.'
+        await this.loadData()
+      } catch (err) {
+        console.error('Failed to delete markets collection', err)
+        this.adminError =
+          err?.response?.data?.error ||
+          err.message ||
+          'Unable to delete markets collection right now.'
+      } finally {
+        this.deletingCollection = false
+      }
     },
     async handleCreateCategory() {
       const name = window.prompt('Name your new category')
