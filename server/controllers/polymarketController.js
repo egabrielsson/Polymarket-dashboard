@@ -105,8 +105,9 @@ async function getMarketsByCategory(req, res, next) {
 async function getTechMarketsHandler(req, res, next) {
   try {
     const limit = Math.min(parseInt(req.query.limit || "20", 10), 20);
+    const search = req.query.search || "";
 
-    const result = await getTechMarkets(limit); // call on service to get tech markets
+    const result = await getTechMarkets(limit, 0, search); // call on service to get tech markets
     return res.json({ success: true, data: result }); // Return the result as JSON response
   } catch (err) {
     if (err.message.includes("Tag not found")) {

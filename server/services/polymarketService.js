@@ -91,11 +91,22 @@ async function searchMarkets(query = "", limit = 50, offset = 0) {
  * Fetch only Tech category markets
  * @param {number} limit - max results (default 100)
  * @param {number} offset - pagination offset (default 0)
+ * @param {string} search - optional search term to filter markets by title
  * @returns {object} { tag, markets }
  */
-async function getTechMarkets(limit = 100, offset = 0) {
+async function getTechMarkets(limit = 100, offset = 0, search = "") {
   // Use the tag-based approach for Tech markets
   const result = await getMarketsByTag("tech", limit);
+  
+  // Filter by search term if provided
+  if (search && search.trim()) {
+    const searchLower = search.toLowerCase().trim();
+    result.markets = result.markets.filter((market) => {
+      const title = (market.question || market.title || "").toLowerCase();
+      return title.includes(searchLower);
+    });
+  }
+  
   return result;
 }
 
