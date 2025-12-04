@@ -26,10 +26,10 @@ async function createUserHandler(req, res) {
     });
   } catch (err) {
     if (err && err.code === "BAD_REQUEST") {
-      return res.status(400).json({ error: err.message });
+      return res.status(401).json({ error: err.message });
     }
     if (err && err.code === "DUPLICATE") {
-      return res.status(409).json({ error: err.message });
+      return res.status(404).json({ error: err.message });
     }
     console.error("Error creating user:", err);
     return res.status(500).json({ error: "Server error" });
