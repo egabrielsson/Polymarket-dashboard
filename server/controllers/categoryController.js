@@ -17,7 +17,7 @@ async function createCategoryHandler(req, res) {
 
         const category = await createCategory(userId, name);
 
-        return res.status(200).json({
+        return res.status(201).json({
             success: true,
             data: category,
         });
