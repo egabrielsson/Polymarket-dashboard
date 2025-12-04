@@ -12,23 +12,35 @@ const Watchlist = require('../models/Watchlist');
 
 
 /**
-* Helpers function to validate ObjectId's to reduce redundacy
-*/
-async function ensureUserExists(userId){
-    // Validate that usersId's are valid values for MongoDB 
-    if(!mongoose.Types.ObjectId.isValid(userId)){ // isValid checks compatability with mongo
-        const err = new Error('Invalid userId');
-        err.code = 'BAD_REQUEST'; // Error 400 "invalid data"
-        throw err;
-    }
-    // Verify the referenced User exists.
-    const user = await User.findById(userId).exec(); // used findByID to look for  the userId                                 
-    if (!user) {
-        const err = new Error('User not found');
-        err.code = 'NOT_FOUND';  // error type 404 ID not found
-        throw err;
-    }
-    return user; // Returns validated user
+ * Helper to resolve the *external* 16-character user id
+ * (stored in `User.characterString`) into the internal Mongo ObjectId.
+ *
+ * All public Watchlist routes now take the same 16-char id that is
+ * returned from the Users endpoints as `id`.
+ */
+async function ensureUserExists(externalUserId) {
+  // Basic sanity check on the 16-char id
+  if (
+    !externalUserId ||
+    typeof externalUserId !== 'string' ||
+    externalUserId.length !== 16
+  ) {
+    const err = new Error('Invalid userId');
+    err.code = 'BAD_REQUEST';
+    throw err;
+  }
+
+  // Look up user by their external id
+  const user = await User.findOne({ characterString: externalUserId }).exec();
+
+  if (!user) {
+    const err = new Error('User not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  // Return full user document so callers can use user._id for relations
+  return user;
 }
 
 
@@ -53,14 +65,15 @@ async function ensureMarketExists(marketId){
 
 
 /**
-* Helper function to ensure the user-market relation does NOT already exist.
-*/
-async function ensureWatchlistNotExists(userId, marketId) {
-  const exists = await Watchlist.findOne({ userId, marketId }).lean().exec(); // findOne almost like findById but 
-                                                                              // now we only want to find a matching document
-                                                                              // and findOne just takes the first document matching the criteria
+ * Helper function to ensure the user-market relation does NOT already exist.
+ * Expects the *internal* Mongo ObjectId for the user.
+ */
+async function ensureWatchlistNotExists(userMongoId, marketId) {
+  const exists = await Watchlist.findOne({ userId: userMongoId, marketId })
+    .lean()
+    .exec();
 
-  if (exists) {         
+  if (exists) {
     const err = new Error('Market already in watchlist');
     err.code = 'DUPLICATE'; // error type 409 unique-constraint / duplicate relationship
     throw err;
@@ -77,11 +90,12 @@ module.exports = {
  * checking for ID validations and relation duplication.
  */
 async removeFromWatchlist(userId, marketId){
-    // Validates ID's of market and user
+    // Resolve external user id to internal Mongo id and validate both ids
     await ensureMarketExists(marketId);
-    await ensureUserExists(userId);
-    // Find existing relation
-    const entry = await Watchlist.findOne({ userId, marketId }).exec();
+    const user = await ensureUserExists(userId);
+
+    // Find existing relation using internal user _id
+    const entry = await Watchlist.findOne({ userId: user._id, marketId }).exec();
     if (!entry) {
     const err = new Error('Watchlist entry not found');
     err.code = 'NOT_FOUND';
@@ -102,12 +116,11 @@ async removeFromWatchlist(userId, marketId){
  * and returs users markets as an array or empty array
  */
 async getUserWatchlist(userId){
-    
-    // Helper function to validate userId
-    await ensureUserExists(userId);
+    // Resolve external id to internal Mongo id
+    const user = await ensureUserExists(userId);
 
-    // Returns users markets
-    const entries = await Watchlist.find({ userId })
+    // Returns users markets for that internal id
+    const entries = await Watchlist.find({ userId: user._id })
     .populate('marketId').sort({ createdAt: -1 })
     .exec();
 
@@ -120,10 +133,10 @@ async getUserWatchlist(userId){
  */
 async getWatchlistEntry(userId, marketId) {
 
-    await ensureUserExists(userId);
+    const user = await ensureUserExists(userId);
     await ensureMarketExists(marketId);
 
-    const entry = await Watchlist.findOne({ userId, marketId })
+    const entry = await Watchlist.findOne({ userId: user._id, marketId })
       .populate('marketId')
       .exec();
 
@@ -145,16 +158,16 @@ async getWatchlistEntry(userId, marketId) {
   async addToWatchlist(userId, marketId) {
 
     // validates ID's and that they exists
-    await ensureUserExists(userId); 
+    const user = await ensureUserExists(userId); 
     await ensureMarketExists(marketId);
     // Makes sure there is no duplicate relationship
-    await ensureWatchlistNotExists(userId, marketId);
+    await ensureWatchlistNotExists(user._id, marketId);
 
-    // Create the watchlist relationship.
-    await Watchlist.create({ userId, marketId });
+    // Create the watchlist relationship using internal user _id.
+    await Watchlist.create({ userId: user._id, marketId });
 
     // Return the user's current watchlist as array of populated Market docs.
-    const entries = await Watchlist.find({ userId })
+    const entries = await Watchlist.find({ userId: user._id })
     .populate('marketId').sort({ createdAt: -1 })
     .exec();
 
