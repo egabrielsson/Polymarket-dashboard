@@ -9,6 +9,7 @@ const {
   getMarketHandler,
   updateMarketHandler,
   deleteMarketHandler,
+  deleteAllMarketsHandler,
 } = require("../controllers/marketController");
 const {
   createNoteHandler,
@@ -60,6 +61,9 @@ router.patch("/:id", updateMarketHandler);
 // DELETE /api/markets/:id - delete a market from the database
 // Removes outdated or invalid market entries
 router.delete("/:id", deleteMarketHandler);
+
+// DELETE /api/markets - delete the entire markets collection
+router.delete("/", deleteAllMarketsHandler);
 
 // Nested Note Routes
 // POST /api/markets/:marketId/notes - create a note for a market

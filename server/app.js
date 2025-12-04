@@ -51,7 +51,7 @@ app.get("/api", (req, res) => {
 // Polymarket API routes
 // Provides endpoints to browse and search live markets from external Polymarket API
 const polymarketRoutes = require("./routes/polymarket");
-app.use("/api/polymarket", polymarketRoutes);
+app.use("/api/polymarkets", polymarketRoutes);
 
 // Category routes
 const categoryRoutes = require("./routes/category");

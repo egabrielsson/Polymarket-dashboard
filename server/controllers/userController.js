@@ -8,6 +8,7 @@ const {
   updateUsername,
   deleteUserByCharacterString,
   getAllUsers,
+  deleteAllUsers,
 } = require("../services/userService");
 
 // POST /api/users
@@ -111,6 +112,16 @@ async function deleteUserHandler(req, res) {
   }
 }
 
+// DELETE /api/users
+async function deleteAllUsersHandler(req, res) {
+  try {
+    await deleteAllUsers();
+    return res.status(204).send();
+  } catch (err) {
+    console.error("Error deleting all users:", err);
+    return res.status(500).json({ error: "Failed to delete users" });
+  }
+}
 // GET /api/users
 async function getAllUsersHandler(req, res) {
   try {
@@ -132,4 +143,5 @@ module.exports = {
   updateUsernameHandler,
   deleteUserHandler,
   getAllUsersHandler,
+  deleteAllUsersHandler,
 };
