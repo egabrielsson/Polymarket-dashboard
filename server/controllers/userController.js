@@ -49,7 +49,7 @@ async function loginHandler(req, res) {
     });
   } catch (err) {
     if (err && err.code === "BAD_REQUEST") {
-      return res.status(400).json({ error: err.message });
+      return res.status(401).json({ error: err.message });
     }
     if (err && err.code === "NOT_FOUND") {
       return res.status(404).json({ error: err.message });
@@ -74,7 +74,7 @@ async function updateUsernameHandler(req, res) {
     });
   } catch (err) {
     if (err && err.code === "BAD_REQUEST") {
-      return res.status(400).json({ error: err.message });
+      return res.status(401).json({ error: err.message });
     }
     if (err && err.code === "NOT_FOUND") {
       return res.status(404).json({ error: err.message });
@@ -98,7 +98,7 @@ async function deleteUserHandler(req, res) {
     });
   } catch (err) {
     if (err && err.code === "BAD_REQUEST") {
-      return res.status(400).json({ error: err.message });
+      return res.status(401).json({ error: err.message });
     }
     if (err && err.code === "NOT_FOUND") {
       return res.status(404).json({ error: err.message });
