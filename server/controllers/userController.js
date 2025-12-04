@@ -19,7 +19,8 @@ async function createUserHandler(req, res) {
     return res.status(201).json({
       message: "User created",
       user: {
-        id: user.characterString, // expose as `id`
+        id: user.characterString,
+        characterString: user.characterString, 
         username: user.username,
       },
     });
