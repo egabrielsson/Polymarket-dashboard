@@ -16,22 +16,7 @@ const {
   listNotesHandler,
 } = require("../controllers/noteController");
 
-const ADMIN_DELETE_TOKEN = process.env.ADMIN_DELETE_TOKEN || ''
-
 const router = express.Router();
-
-function requireAdminDeleteToken(req, res, next) {
-  if (!ADMIN_DELETE_TOKEN) {
-    return res.status(503).json({ error: 'Admin delete is not configured.' })
-  }
-
-  const providedToken = req.header('x-admin-token') || req.query.adminToken
-  if (providedToken !== ADMIN_DELETE_TOKEN) {
-    return res.status(401).json({ error: 'Unauthorized admin access' })
-  }
-
-  next()
-}
 
 /**
  * POST /api/markets
@@ -78,7 +63,7 @@ router.patch("/:id", updateMarketHandler);
 router.delete("/:id", deleteMarketHandler);
 
 // DELETE /api/markets - delete the entire markets collection
-router.delete("/", requireAdminDeleteToken, deleteAllMarketsHandler);
+router.delete("/", deleteAllMarketsHandler);
 
 // Nested Note Routes
 // POST /api/markets/:marketId/notes - create a note for a market

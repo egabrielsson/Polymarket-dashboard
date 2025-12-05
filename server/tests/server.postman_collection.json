@@ -1132,9 +1132,7 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [
-              { "key": "x-admin-token", "value": "{{adminDeleteToken}}", "type": "text" }
-            ],
+            "header": [],
             "url": {
               "raw": "{{host}}/api/markets",
               "host": ["{{host}}"],
@@ -1174,11 +1172,6 @@
     },
     {
       "key": "watchlistUserId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "adminDeleteToken",
       "value": "",
       "type": "string"
     }
