@@ -30,11 +30,22 @@
           />
           Create Category
         </b-button>
+        <b-form-select
+          v-model="volumeFilter"
+          size="sm"
+          class="w-auto"
+          :options="volumeFilterOptions"
+          title="Filter by 24h volume"
+        />
+        <b-form-select
+          v-model="volumeSort"
+          size="sm"
+          class="w-auto"
+          :options="volumeSortOptions"
+          title="Sort by 24h volume"
+        />
       </div>
-      <div
-        v-if="isAdminUser"
-        class="d-flex flex-wrap gap-2 align-items-center"
-      >
+      <div v-if="isAdminUser" class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
           variant="outline-danger"
           class="border-2"
@@ -49,12 +60,7 @@
           Delete markets collection
         </b-button>
       </div>
-      <b-alert
-        v-if="adminSuccess"
-        variant="success"
-        show
-        class="mb-0"
-      >
+      <b-alert v-if="adminSuccess" variant="success" show class="mb-0">
         {{ adminSuccess }}
       </b-alert>
       <b-alert v-if="adminError" variant="danger" show class="mb-0">
@@ -81,7 +87,7 @@
       </div>
       <div v-else class="category-grid">
         <CategoryColumn
-          v-for="category in categories"
+          v-for="category in filteredCategories"
           :key="category._id"
           :category="category"
           :markets="category.markets"
@@ -121,6 +127,8 @@ export default {
       deletingCollection: false,
       adminError: '',
       adminSuccess: '',
+      volumeFilter: 'all',
+      volumeSort: 'desc'
     }
   },
   computed: {
@@ -136,12 +144,75 @@ export default {
         _id,
         name
       }))
+    },
+    volumeFilterOptions() {
+      return [
+        { value: 'all', text: 'Volume: All' },
+        { value: 'high100', text: 'Volume ≥ 100k' },
+        { value: 'high250', text: 'Volume ≥ 250k' },
+        { value: 'high500', text: 'Volume ≥ 500k' },
+        { value: 'high1m', text: 'Volume ≥ 1M' },
+        { value: 'low100', text: 'Volume < 100k' }
+      ]
+    },
+    volumeSortOptions() {
+      return [
+        { value: 'desc', text: 'Volume: High → Low' },
+        { value: 'asc', text: 'Volume: Low → High' }
+      ]
+    },
+    filteredCategories() {
+      return this.categories.map((category) => {
+        const filteredMarkets = category.markets
+          .filter((market) => this.passesVolumeFilter(market))
+          .sort((a, b) => this.compareVolume(a, b))
+        return { ...category, markets: filteredMarkets }
+      })
     }
   },
   created() {
     this.loadData()
   },
   methods: {
+    getVolumeValue(market) {
+      const rawVolume =
+        market.volume ||
+        market.volume24hr ||
+        market.volumeNum ||
+        market.volumeClob ||
+        0
+      const numeric = Number(rawVolume)
+      return Number.isFinite(numeric) ? numeric : 0
+    },
+    passesVolumeFilter(market) {
+      const volume = this.getVolumeValue(market)
+      const thresholds = {
+        high100: 100000,
+        high250: 250000,
+        high500: 500000,
+        high1m: 1000000,
+        low100: 100000
+      }
+
+      if (this.volumeFilter === 'all') {
+        return true
+      }
+
+      if (this.volumeFilter === 'low100') {
+        return volume < thresholds.low100
+      }
+
+      const min = thresholds[this.volumeFilter] || 0
+      return volume >= min
+    },
+    compareVolume(a, b) {
+      const volA = this.getVolumeValue(a)
+      const volB = this.getVolumeValue(b)
+      if (this.volumeSort === 'asc') {
+        return volA - volB
+      }
+      return volB - volA
+    },
     async loadData() {
       this.loadingCategories = true
       this.categoryError = ''
@@ -367,17 +438,18 @@ export default {
       }
 
       // Confirm deletion
-      const confirmMessage = category.markets.length > 0
-        ? `Delete "${category.name}"? ${category.markets.length} market(s) will be moved to Uncategorized.`
-        : `Delete "${category.name}"?`
-      
+      const confirmMessage =
+        category.markets.length > 0
+          ? `Delete "${category.name}"? ${category.markets.length} market(s) will be moved to Uncategorized.`
+          : `Delete "${category.name}"?`
+
       if (!window.confirm(confirmMessage)) {
         return
       }
 
       this.deletingCategories[categoryId] = true
       this.categoryError = ''
-      
+
       try {
         // Move all markets in this category to uncategorized (null categoryId)
         const movePromises = category.markets.map((market) =>

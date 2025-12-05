@@ -1,7 +1,7 @@
 <template>
   <div class="market-notes">
     <b-button
-      variant="outline-secondary"
+      variant="primary"
       size="sm"
       @click="showModal = true"
       :disabled="loadingNotes && !notes.length"
@@ -51,12 +51,18 @@
             maxlength="100"
           />
 
-          <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center mt-2">
+          <div
+            class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center mt-2"
+          >
             <small class="text-muted">
               {{ noteContent.length }}/100 characters
             </small>
             <div class="d-flex gap-2 ms-sm-auto">
-              <b-button variant="outline-secondary" size="sm" @click="closeModal">
+              <b-button
+                variant="outline-secondary"
+                size="sm"
+                @click="closeModal"
+              >
                 Close
               </b-button>
               <b-button
@@ -97,12 +103,12 @@ export default {
   props: {
     marketId: {
       type: [String, Object],
-      required: true,
+      required: true
     },
     marketTitle: {
       type: String,
-      default: '',
-    },
+      default: ''
+    }
   },
   data() {
     return {
@@ -114,7 +120,7 @@ export default {
       savingNote: false,
       saveError: '',
       currentMarketId: null,
-      userNote: null,
+      userNote: null
     }
   },
   computed: {
@@ -126,7 +132,7 @@ export default {
     },
     canSubmit() {
       return Boolean(this.noteContent.trim()) && Boolean(this.activeUserId)
-    },
+    }
   },
   watch: {
     showModal(newValue) {
@@ -138,7 +144,7 @@ export default {
       if (this.showModal) {
         this.loadNotes()
       }
-    },
+    }
   },
   methods: {
     resolveMarketId() {
@@ -210,7 +216,7 @@ export default {
         } else {
           await Api.post(`/markets/${resolvedId}/notes`, {
             userId: this.activeUserId,
-            content: this.noteContent.trim(),
+            content: this.noteContent.trim()
           })
         }
         await this.loadNotes()
@@ -236,10 +242,10 @@ export default {
       if (Number.isNaN(date.getTime())) return 'Unknown'
       return date.toLocaleString(undefined, {
         dateStyle: 'medium',
-        timeStyle: 'short',
+        timeStyle: 'short'
       })
-    },
-  },
+    }
+  }
 }
 </script>
 
