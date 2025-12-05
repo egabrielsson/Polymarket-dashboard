@@ -11,10 +11,9 @@ const {
   getMarketsByTag,
   getTechMarkets,
 } = require("../services/polymarketService");
-const { writeJsonFile } = require("../utils/fileWriter");
 
 /**
- * GET /api/polymarket/markets/:pmId
+ * GET /api/polymarkets/markets/:pmId
  * Fetch a single market by ID
  */
 async function getMarket(req, res, next) {
@@ -44,7 +43,7 @@ async function getMarket(req, res, next) {
 }
 
 /**
- * GET /api/polymarket/markets
+ * GET /api/polymarkets/markets
  * Search markets with optional query and pagination
  */
 async function listMarkets(req, res, next) {
@@ -66,7 +65,7 @@ async function listMarkets(req, res, next) {
   }
 }
 
-//GET /api/polymarket/categories/:slug/markets
+//GET /api/polymarkets/categories/:slug/markets
 // Fetch markets by category (tag) slug
 // slug - category tag slug from Polymarket
 async function getMarketsByCategory(req, res, next) {
@@ -97,7 +96,7 @@ async function getMarketsByCategory(req, res, next) {
   }
 }
 
-// GET /api/polymarket/tech-markets
+// GET /api/polymarkets/tech-markets
 // Fetch only Tech category markets (convenience endpoint)
 // A convenience endpoint is used to simplify access to commonly requested data
 // Allowing clients to easily retrieve specific datasets without complex queries
@@ -106,8 +105,9 @@ async function getMarketsByCategory(req, res, next) {
 async function getTechMarketsHandler(req, res, next) {
   try {
     const limit = Math.min(parseInt(req.query.limit || "20", 10), 20);
+    const search = req.query.search || "";
 
-    const result = await getTechMarkets(limit); // call on service to get tech markets
+    const result = await getTechMarkets(limit, 0, search); // call on service to get tech markets
     return res.json({ success: true, data: result }); // Return the result as JSON response
   } catch (err) {
     if (err.message.includes("Tag not found")) {
@@ -123,56 +123,10 @@ async function getTechMarketsHandler(req, res, next) {
   }
 }
 
-// GET /api/polymarket/tech-markets/debug
-// Fetch tech markets and save to a JSON file for inspection
-// Beneficial for debuggning and development purposes
-// we can see what data is returned from Polymarket API
-// and decide what we actually want to use
-
-async function getTechMarketsDebug(req, res, next) {
-  try {
-    const limit = Math.min(parseInt(req.query.limit || "20", 10), 20);
-
-    const result = await getTechMarkets(limit);
-
-    // Write to file for inspection
-    const timestamp = new Date().toISOString(); // current timestamp
-    const debugData = {
-      timestamp,
-      limit,
-      marketCount: result.markets ? result.markets.length : 0,
-      tag: result.tag,
-      markets: result.markets,
-    };
-
-    const filePath = writeJsonFile("tech-markets-debug.json", debugData); // File write to debug folder
-
-    // return response with file path and data
-    return res.json({
-      success: true,
-      message: `Markets saved to: server/debug/tech-markets-debug.json`,
-      filePath,
-      data: debugData,
-    });
-  } catch (err) {
-    if (err.message.includes("Tag not found")) {
-      return res.status(404).json({ error: err.message });
-    }
-    if (err.message.includes("rate limited")) {
-      return res
-        .status(429)
-        .json({ error: "Too many requests to Polymarket API" });
-    }
-    console.error("Error fetching tech markets (debug):", err.message);
-    return res.status(502).json({ error: "Failed to fetch tech markets" });
-  }
-}
-
 // Export controller functions
 module.exports = {
   getMarket,
   listMarkets,
   getMarketsByCategory,
   getTechMarketsHandler,
-  getTechMarketsDebug,
 };
