@@ -62,10 +62,8 @@
                   "    if (pm.response.code === 201) {",
                   "        var jsonData = pm.response.json();",
                   "        pm.expect(jsonData).to.have.property(\"user\");",
-                  "        pm.expect(jsonData.user).to.have.property(\"characterString\");",
-                  "        pm.expect(jsonData.user).to.have.property(\"username\");",
                   "        pm.expect(jsonData.user).to.have.property(\"id\");",
-                  "        pm.environment.set(\"characterString\", jsonData.user.characterString);",
+                  "        pm.expect(jsonData.user).to.have.property(\"username\");",
                   "        pm.environment.set(\"userId\", jsonData.user.id);",
                   "    }",
                   "});"
@@ -109,7 +107,8 @@
                   "pm.test(\"If 200, returns user data\", function () {",
                   "    if (pm.response.code === 200) {",
                   "        var jsonData = pm.response.json();",
-                  "        pm.expect(jsonData).to.have.property(\"characterString\");",
+                  "        pm.expect(jsonData).to.have.property(\"userId\");",
+                  "        pm.expect(jsonData).to.have.property(\"username\");",
                   "    }",
                   "});"
                 ],
@@ -122,7 +121,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\"characterString\": \"{{characterString}}\"}",
+              "raw": "{\"id\": \"{{userId}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -138,7 +137,7 @@
           "response": []
         },
         {
-          "name": "4. PATCH /api/users/:characterString",
+          "name": "4. PATCH /api/users/:id",
           "event": [
             {
               "listen": "test",
@@ -173,15 +172,15 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/users/{{characterString}}",
+              "raw": "{{host}}/api/users/{{userId}}",
               "host": ["{{host}}"],
-              "path": ["api", "users", "{{characterString}}"]
+              "path": ["api", "users", "{{userId}}"]
             }
           },
           "response": []
         },
         {
-          "name": "5. DELETE /api/users/:characterString",
+          "name": "5. DELETE /api/users/:id",
           "event": [
             {
               "listen": "test",
@@ -200,9 +199,36 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/users/{{characterString}}",
+              "raw": "{{host}}/api/users/{{userId}}",
               "host": ["{{host}}"],
-              "path": ["api", "users", "{{characterString}}"]
+              "path": ["api", "users", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6. DELETE /api/users (collection)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteAllUsers",
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/users",
+              "host": ["{{host}}"],
+              "path": ["api", "users"]
             }
           },
           "response": []
@@ -213,7 +239,7 @@
       "name": "POLYMARKET API",
       "item": [
         {
-          "name": "7. GET /api/polymarket/markets?limit=20",
+          "name": "7. GET /api/polymarkets/markets?limit=20",
           "event": [
             {
               "listen": "test",
@@ -251,16 +277,16 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/polymarket/markets?limit=20",
+              "raw": "{{host}}/api/polymarkets/markets?limit=20",
               "host": ["{{host}}"],
-              "path": ["api", "polymarket", "markets"],
+              "path": ["api", "polymarkets", "markets"],
               "query": [{ "key": "limit", "value": "20" }]
             }
           },
           "response": []
         },
         {
-          "name": "8. GET /api/polymarket/markets/:pmId",
+          "name": "8. GET /api/polymarkets/markets/:pmId",
           "event": [
             {
               "listen": "test",
@@ -274,9 +300,9 @@
                   "pm.test(\"If 200, has id and question\", function () {",
                   "    if (pm.response.code === 200) {",
                   "        var jsonData = pm.response.json();",
-                    "        pm.expect(jsonData).to.have.property(\"data\");",
-                    "        pm.expect(jsonData.data).to.have.property(\"id\");",
-                    "        pm.expect(jsonData.data).to.have.property(\"question\");",
+                  "        pm.expect(jsonData).to.have.property(\"data\");",
+                  "        pm.expect(jsonData.data).to.have.property(\"id\");",
+                  "        pm.expect(jsonData.data).to.have.property(\"question\");",
                   "    }",
                   "});"
                 ],
@@ -288,15 +314,15 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/polymarket/markets/516950",
+              "raw": "{{host}}/api/polymarkets/markets/516950",
               "host": ["{{host}}"],
-              "path": ["api", "polymarket", "markets", "516950"]
+              "path": ["api", "polymarkets", "markets", "516950"]
             }
           },
           "response": []
         },
         {
-          "name": "9. GET /api/polymarket/tech-markets?limit=10",
+          "name": "9. GET /api/polymarkets/tech-markets?limit=10",
           "event": [
             {
               "listen": "test",
@@ -308,9 +334,9 @@
                   "});",
                   "",
                   "pm.test(\"Response contains markets array\", function () {",
-                    "    var jsonData = pm.response.json();",
-                    "    pm.expect(jsonData).to.have.nested.property(\"data.markets\");",
-                    "    pm.expect(jsonData.data.markets).to.be.an(\"array\");",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.nested.property(\"data.markets\");",
+                  "    pm.expect(jsonData.data.markets).to.be.an(\"array\");",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -321,9 +347,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/polymarket/tech-markets?limit=10",
+              "raw": "{{host}}/api/polymarkets/tech-markets?limit=10",
               "host": ["{{host}}"],
-              "path": ["api", "polymarket", "tech-markets"],
+              "path": ["api", "polymarkets", "tech-markets"],
               "query": [{ "key": "limit", "value": "10" }]
             }
           },
@@ -812,7 +838,6 @@
                   "    if (pm.response.code === 201) {",
                   "        var jsonData = pm.response.json();",
                   "        pm.expect(jsonData).to.have.property(\"user\");",
-                  "        pm.environment.set(\"watchlistCharacterString\", jsonData.user.characterString);",
                   "        pm.environment.set(\"watchlistUserId\", jsonData.user.id);",
                   "    }",
                   "});"
@@ -856,8 +881,8 @@
                   "pm.test(\"If 201, response has data\", function () {",
                   "    if (pm.response.code === 201) {",
                   "        var jsonData = pm.response.json();",
-                    "        pm.expect(jsonData).to.have.property(\"success\", true);",
-                    "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
+                  "        pm.expect(jsonData).to.have.property(\"success\", true);",
+                  "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
                   "    }",
                   "});"
                 ],
@@ -900,8 +925,8 @@
                   "pm.test(\"If 200, response has data\", function () {",
                   "    if (pm.response.code === 200) {",
                   "        var jsonData = pm.response.json();",
-                    "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
-                    "        pm.expect(jsonData.data.watchlist).to.be.an(\"array\");",
+                  "        pm.expect(jsonData).to.have.nested.property(\"data.watchlist\");",
+                  "        pm.expect(jsonData.data.watchlist).to.be.an(\"array\");",
                   "    }",
                   "});"
                 ],
@@ -950,7 +975,13 @@
             "url": {
               "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists/{{marketId}}",
               "host": ["{{host}}"],
-              "path": ["api", "users", "{{watchlistUserId}}", "watchlists", "{{marketId}}"]
+              "path": [
+                "api",
+                "users",
+                "{{watchlistUserId}}",
+                "watchlists",
+                "{{marketId}}"
+              ]
             }
           },
           "response": []
@@ -977,7 +1008,13 @@
             "url": {
               "raw": "{{host}}/api/users/{{watchlistUserId}}/watchlists/{{marketId}}",
               "host": ["{{host}}"],
-              "path": ["api", "users", "{{watchlistUserId}}", "watchlists", "{{marketId}}"]
+              "path": [
+                "api",
+                "users",
+                "{{watchlistUserId}}",
+                "watchlists",
+                "{{marketId}}"
+              ]
             }
           },
           "response": []
@@ -1070,9 +1107,36 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/users/{{watchlistCharacterString}}",
+              "raw": "{{host}}/api/users/{{watchlistUserId}}",
               "host": ["{{host}}"],
-              "path": ["api", "users", "{{watchlistCharacterString}}"]
+              "path": ["api", "users", "{{watchlistUserId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26. DELETE /api/markets (collection)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// deleteAllMarkets",
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/markets",
+              "host": ["{{host}}"],
+              "path": ["api", "markets"]
             }
           },
           "response": []
@@ -1102,22 +1166,12 @@
       "type": "string"
     },
     {
-      "key": "characterString",
-      "value": "",
-      "type": "string"
-    },
-    {
       "key": "userId",
       "value": "",
       "type": "string"
     },
     {
       "key": "watchlistUserId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "watchlistCharacterString",
       "value": "",
       "type": "string"
     }

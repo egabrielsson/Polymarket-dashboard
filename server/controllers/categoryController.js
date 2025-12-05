@@ -3,16 +3,35 @@
 // Validates user input, calls service layer, and returns appropriate HTTP responses
 
 const {
+    listCategories,
     createCategory,
     updateCategory,
     deleteCategory,
 } = require("../services/categoryService");
 
+// List categories (global + optional user scoped)
+async function listCategoriesHandler(req, res) {
+    try {
+        const { userId } = req.query;
+        const categories = await listCategories(userId);
+        return res.status(200).json({
+            success: true,
+            data: categories,
+        });
+    } catch (err) {
+        if (err && err.code === 'BAD_REQUEST') {
+            return res.status(400).json({ error: err.message });
+        }
+        console.error("Error listing categories:", err);
+        return res.status(500).json({ error: "Failed to list categories" });
+    }
+}
+
 // Create a new category for a user
 // If no userId is provided, creates a global category
 async function createCategoryHandler(req, res) {
     try {
-        const userId = req.user?._id || null;
+        const userId = req.body.userId || req.user?._id || null;
         const { name } = req.body;
 
         const category = await createCategory(userId, name);
@@ -34,7 +53,7 @@ async function createCategoryHandler(req, res) {
 // Only the category owner can update it
 async function updateCategoryHandler(req, res) {
     try {
-        const userId = req.user?._id;
+        const userId = req.body.userId || req.user?._id;
         const { id } = req.params;
         const { name } = req.body;
 
@@ -63,7 +82,7 @@ async function updateCategoryHandler(req, res) {
 // Only the category owner can delete it
 async function deleteCategoryHandler(req, res) {
     try {
-        const userId = req.user?._id;
+        const userId = req.body.userId || req.user?._id;
         const { id } = req.params;
 
         await deleteCategory(userId, id);
@@ -83,6 +102,7 @@ async function deleteCategoryHandler(req, res) {
 
 // Export the handlers
 module.exports = {
+    listCategoriesHandler,
     createCategoryHandler,
     updateCategoryHandler,
     deleteCategoryHandler,

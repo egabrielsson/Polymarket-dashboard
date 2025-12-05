@@ -5,9 +5,11 @@ const express = require("express");
 const {
   createUserHandler,
   loginHandler,
+  getUserHandler,
   updateUsernameHandler,
   deleteUserHandler,
   getAllUsersHandler,
+  deleteAllUsersHandler,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -19,26 +21,36 @@ const router = express.Router();
 router.get("/users", getAllUsersHandler);
 
 /**
+ * GET /api/users/:id
+ */
+router.get("/users/:id", getUserHandler);
+
+/**
  * POST /api/users
- * Body: { "username": "MyFirstUser" }
+ * Body: { "username": "MyFirstUser" } // username optional, auto-assigned if missing
  */
 router.post("/users", createUserHandler);
 
 /**
  * POST /api/sessions
- * Body: { "characterString": "A1B2C3D4E5F6G7H8" }
+ * Body: { "id": "A1B2C3D4E5F6G7H8" }  // 16-character id
  */
 router.post("/sessions", loginHandler);
 
 /**
- * PATCH /api/users/:characterString
+ * PATCH /api/users/:id
  * Body: { "newUsername": "NewName" }
  */
-router.patch("/users/:characterString", updateUsernameHandler);
+router.patch("/users/:id", updateUsernameHandler);
 
 /**
- * DELETE /api/users/:characterString
+ * DELETE /api/users
  */
-router.delete("/users/:characterString", deleteUserHandler);
+router.delete("/users", deleteAllUsersHandler);
+
+/**
+ * DELETE /api/users/:id
+ */
+router.delete("/users/:id", deleteUserHandler);
 
 module.exports = router;
