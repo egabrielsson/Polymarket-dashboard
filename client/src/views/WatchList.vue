@@ -31,7 +31,10 @@
           Create Category
         </b-button>
       </div>
-      <div class="d-flex flex-wrap gap-2 align-items-center">
+      <div
+        v-if="isAdminUser"
+        class="d-flex flex-wrap gap-2 align-items-center"
+      >
         <b-button
           variant="outline-danger"
           class="border-2"
@@ -123,6 +126,10 @@ export default {
   computed: {
     activeUserId() {
       return sessionStore.session.user?.id || null
+    },
+    isAdminUser() {
+      const username = sessionStore.session.user?.username || ''
+      return username.toUpperCase().includes('ADMIN')
     },
     categoryOptions() {
       return this.categories.map(({ _id, name }) => ({
