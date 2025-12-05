@@ -99,6 +99,7 @@
 <script>
 import CategoryColumn from '@/components/CategoryColumn.vue'
 import { Api } from '@/Api'
+import { loadWatchlistMarketDetails } from '@/utils/watchlistHelper'
 
 const DEFAULT_USER_ID = import.meta.env.VITE_TEST_USER_ID || ''
 const ADMIN_DELETE_TOKEN = import.meta.env.VITE_ADMIN_DELETE_TOKEN || ''
@@ -118,7 +119,7 @@ export default {
       removingMarkets: {},
       deletingCollection: false,
       adminError: '',
-      adminSuccess: ''
+      adminSuccess: '',
     }
   },
   computed: {
@@ -144,9 +145,10 @@ export default {
           this.fetchCategories(),
           this.fetchWatchlist()
         ])
+        const watchlistWithDetails = await loadWatchlistMarketDetails(watchlist)
         this.categories = this.combineCategoriesWithMarkets(
           categories,
-          watchlist
+          watchlistWithDetails
         )
       } catch (err) {
         console.error('Failed to load watchlist data', err)
