@@ -37,18 +37,62 @@
         Watchlist
       </RouterLink>
     </nav>
+    <div class="sidebar__session mt-auto pt-3 border-top border-secondary">
+      <div v-if="user" class="d-flex flex-column gap-1">
+        <span class="text-white-50 small">Signed in as</span>
+        <span class="fw-semibold">{{ user.username || user.id }}</span>
+        <button
+          class="btn btn-sm btn-outline-light align-self-start"
+          type="button"
+          @click="handleLogout"
+        >
+          Logout
+        </button>
+      </div>
+      <RouterLink
+        v-else
+        class="btn btn-sm btn-outline-light"
+        :to="{ name: 'login' }"
+      >
+        Login
+      </RouterLink>
+    </div>
   </aside>
 </template>
 
 <script>
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSessionStore } from '@/stores/sessionStore'
+
 export default {
-  name: 'SideBar'
+  name: 'SideBar',
+  setup() {
+    const router = useRouter()
+    const sessionStore = useSessionStore()
+    onMounted(() => {
+      sessionStore.refresh()
+    })
+    const user = computed(() => sessionStore.session.user)
+
+    const handleLogout = () => {
+      sessionStore.clearUser()
+      router.push({ name: 'login' })
+    }
+
+    return { user, handleLogout }
+  }
 }
 </script>
 
 <style scoped>
 .sidebar {
-  min-height: 100%;
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1.5rem;
 }
 
 .sidebar__brand {
