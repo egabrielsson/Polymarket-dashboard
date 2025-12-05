@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Login from './views/Login.vue'
 import Home from './views/Home.vue'
-import BrowseMarkets from './views/browseMarkets.vue'
+import BrowseMarkets from './views/BrowseMarkets.vue'
 import Account from './views/Account.vue'
 import WatchList from './views/WatchList.vue'
 import { getStoredSession } from './stores/sessionStore'
