@@ -8,36 +8,44 @@ const generateId = require("../utils/IDcreation");
  * but conceptually this is the user's unique identifier.
  */
 async function createUser(username) {
-  if (!username) {
-    const err = new Error("Username is required");
-    err.code = "BAD_REQUEST";
-    throw err;
-  }
+  const sanitizedUsername = typeof username === "string" ? username.trim() : "";
+  const finalUsername = sanitizedUsername || (await generateDefaultUsername("user"));
+  const id = generateId(); // 16-character unique id
 
-  try {
-    const id = generateId(); // 16-character unique id
+  const user = await User.create({
+    characterString: id, // Database field name (historical), stores the user id
+    username: finalUsername,
+  });
 
-    const user = await User.create({
-      characterString: id, // Database field name (historical), stores the user id
-      username,
-    });
-
-    return user;
-  } catch (err) {
-    // Duplicate key error from MongoDB
-    if (err.code === 11000) {
-      const dupErr = new Error("Generated id already exists, please try again");
-      dupErr.code = "DUPLICATE";
-      throw dupErr;
-    }
-    throw err;
-  }
+  return user;
 }
+
 
 /**
  * Login by 16-character user id
  */
 async function loginById(id) {
+  if (!id) {
+    const err = new Error("16 character id is required");
+    err.code = "BAD_REQUEST";
+    throw err;
+  }
+
+  const user = await User.findOne({ characterString: id });
+
+  if (!user) {
+    const err = new Error("User with this id does not exist");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  return user;
+}
+
+/**
+ * Retrieve a single user by 16-character id
+ */
+async function getUserById(id) {
   if (!id) {
     const err = new Error("16 character id is required");
     err.code = "BAD_REQUEST";
@@ -65,7 +73,9 @@ async function updateUsername(id, newUsername) {
     throw err;
   }
 
-  if (!newUsername) {
+  const trimmedUsername =
+    typeof newUsername === "string" ? newUsername.trim() : "";
+  if (!trimmedUsername) {
     const err = new Error("newUsername is required");
     err.code = "BAD_REQUEST";
     throw err;
@@ -73,7 +83,7 @@ async function updateUsername(id, newUsername) {
 
   const updatedUser = await User.findOneAndUpdate(
     { characterString: id },
-    { $set: { username: newUsername } },
+    { $set: { username: trimmedUsername } },
     { new: true }
   );
 
@@ -123,9 +133,15 @@ async function getAllUsers() {
   return users;
 }
 
+async function generateDefaultUsername(prefix = "user") {
+  const count = await User.countDocuments();
+  return `${prefix}${count + 1}`;
+}
+
 module.exports = {
   createUser,
   loginById,
+  getUserById,
   updateUsername,
   deleteUserById,
   getAllUsers,
