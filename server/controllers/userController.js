@@ -5,6 +5,7 @@
 const {
   createUser,
   loginById,
+  getUserById,
   updateUsername,
   deleteUserById,
   getAllUsers,
@@ -55,6 +56,31 @@ async function loginHandler(req, res) {
       return res.status(404).json({ error: err.message });
     }
     console.error("Error logging in user:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
+// GET /api/users/:id
+async function getUserHandler(req, res) {
+  try {
+    const { id } = req.params;
+    const user = await getUserById(id);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: user.characterString,
+        username: user.username,
+      },
+    });
+  } catch (err) {
+    if (err && err.code === "BAD_REQUEST") {
+      return res.status(400).json({ error: err.message });
+    }
+    if (err && err.code === "NOT_FOUND") {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error("Error getting user:", err);
     return res.status(500).json({ error: "Server error" });
   }
 }
@@ -118,6 +144,7 @@ async function deleteAllUsersHandler(req, res) {
     return res.status(500).json({ error: "Failed to delete users" });
   }
 }
+
 // GET /api/users
 async function getAllUsersHandler(req, res) {
   try {
@@ -142,6 +169,7 @@ async function getAllUsersHandler(req, res) {
 module.exports = {
   createUserHandler,
   loginHandler,
+  getUserHandler,
   updateUsernameHandler,
   deleteUserHandler,
   getAllUsersHandler,

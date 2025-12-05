@@ -9,6 +9,8 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Market = require('../models/Market');
 const Watchlist = require('../models/Watchlist');
+const { getUserTechCategory } = require('./categoryService');
+const { updateMarket } = require('./marketService');
 
 
 /**
@@ -154,14 +156,27 @@ async getWatchlistEntry(userId, marketId) {
   * Prevents duplicates, creates entry, and returns populated market list.
   * Using userId and marketId to connect the market
   * to the personilized watchist. 
+  * Automatically assigns the market to the user's "Tech" category if not already categorized.
   */
   async addToWatchlist(userId, marketId) {
 
     // validates ID's and that they exists
     const user = await ensureUserExists(userId); 
-    await ensureMarketExists(marketId);
+    const market = await ensureMarketExists(marketId);
     // Makes sure there is no duplicate relationship
     await ensureWatchlistNotExists(user._id, marketId);
+
+    // If market doesn't have a categoryId, assign it to user's Tech category
+    if (!market.categoryId) {
+      try {
+        const techCategory = await getUserTechCategory(userId);
+        // Update the market with the Tech category
+        await updateMarket(marketId, { categoryId: techCategory._id });
+      } catch (err) {
+        // Log error but don't fail watchlist addition if category assignment fails
+        console.error('Failed to assign Tech category to market:', err);
+      }
+    }
 
     // Create the watchlist relationship using internal user _id.
     await Watchlist.create({ userId: user._id, marketId });

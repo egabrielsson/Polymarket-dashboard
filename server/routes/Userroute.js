@@ -5,6 +5,7 @@ const express = require("express");
 const {
   createUserHandler,
   loginHandler,
+  getUserHandler,
   updateUsernameHandler,
   deleteUserHandler,
   getAllUsersHandler,
@@ -20,8 +21,13 @@ const router = express.Router();
 router.get("/users", getAllUsersHandler);
 
 /**
+ * GET /api/users/:id
+ */
+router.get("/users/:id", getUserHandler);
+
+/**
  * POST /api/users
- * Body: { "username": "MyFirstUser" }
+ * Body: { "username": "MyFirstUser" } // username optional, auto-assigned if missing
  */
 router.post("/users", createUserHandler);
 
