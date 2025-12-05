@@ -7,186 +7,155 @@ const {
   listNotesByMarket,
   updateNote,
   deleteNote,
-} = require("../services/noteService");
+  getNoteForUserMarket,
+  upsertNoteForUserMarket,
+  deleteNoteForUserMarket,
+} = require('../services/noteService')
 
-// Create a note for a specific market
-// User must be authenticated (userId from auth middleware/request)
+function mapErrorToStatus(err) {
+  if (!err || !err.code) return 500
+  if (err.code === 'BAD_REQUEST') return 400
+  if (err.code === 'NOT_FOUND') return 404
+  if (err.code === 'NOT_IN_WATCHLIST') return 404
+  if (err.code === 'FORBIDDEN') return 403
+  return 500
+}
+
+function mapErrorMessage(err, fallback) {
+  return err?.message || fallback
+}
+
+// Create or update a note for a specific market (legacy endpoint)
 async function createNoteHandler(req, res) {
   try {
-    // Extract userId from authenticated request
-    // In a real app, this comes from a JWT token or session
-    // For now, we expect it in the request body or from middleware
-    const { userId } = req.body;
-    const { marketId } = req.params;
-    const { content } = req.body;
-
-    // Validate required fields
-    if (!userId) {
-      return res.status(401).json({
-        error: "User authentication required",
-      });
-    }
+    const { userId, content } = req.body
+    const { marketId } = req.params
 
     if (!marketId) {
-      return res.status(400).json({
-        error: "marketId is required",
-      });
+      return res.status(400).json({ error: 'marketId is required' })
     }
 
-    if (!content) {
-      return res.status(400).json({
-        error: "content is required",
-      });
-    }
+    const note = await createNote(userId, marketId, content)
 
-    // Call service layer to create note
-    const note = await createNote(userId, marketId, content);
-
-    // Return 201 Created with the saved note
     return res.status(201).json({
       success: true,
-      message: "Note created successfully",
+      message: 'Note created successfully',
       data: note,
-    });
+    })
   } catch (err) {
-    console.error("Error creating note:", err.message);
-    return res.status(500).json({
-      error: "Failed to create note",
-    });
+    const status = mapErrorToStatus(err)
+    console.error('Error creating note:', err.message)
+    return res.status(status).json({ error: mapErrorMessage(err, 'Failed to create note') })
   }
 }
 
-// List all notes for a specific market
-// Returns notes sorted by newest first
+// List notes for a market, optionally filtered by userId
 async function listNotesHandler(req, res) {
   try {
-    // Extract the market ID from the URL parameter
-    const { marketId } = req.params;
+    const { marketId } = req.params
+    const { userId } = req.query
 
-    // Validate marketId
     if (!marketId) {
-      return res.status(400).json({
-        error: "marketId is required",
-      });
+      return res.status(400).json({ error: 'marketId is required' })
     }
 
-    // Call service layer to get notes
-    const notes = await listNotesByMarket(marketId);
+    const notes = await listNotesByMarket(marketId, userId)
 
-    // Return 200 OK with the notes array (can be empty)
     return res.status(200).json({
       success: true,
       data: notes,
-    });
+    })
   } catch (err) {
-    console.error("Error listing notes:", err.message);
-    return res.status(500).json({
-      error: "Failed to list notes",
-    });
+    const status = mapErrorToStatus(err)
+    console.error('Error listing notes:', err.message)
+    return res.status(status).json({ error: mapErrorMessage(err, 'Failed to list notes') })
   }
 }
 
-// Update a note's content
-// Only the note owner can update it
+// Update a note's content by note id (legacy)
 async function updateNoteHandler(req, res) {
   try {
-    // Extract note ID from URL parameter
-    const { id } = req.params;
+    const { id } = req.params
+    const { userId, content } = req.body
 
-    // Extract userId and updated content from request body
-    const { userId, content } = req.body;
+    const note = await updateNote(id, userId, content)
 
-    // Validate required fields
-    if (!userId) {
-      return res.status(401).json({
-        error: "User authentication required",
-      });
-    }
-
-    if (!content) {
-      return res.status(400).json({
-        error: "content is required",
-      });
-    }
-
-    // Call service layer to update the note
-    const note = await updateNote(id, userId, content);
-
-    // Return 200 OK with the updated note
     return res.status(200).json({
       success: true,
       data: note,
-    });
+    })
   } catch (err) {
-    // Handle 404 Not Found
-    if (err && err.code === 'NOT_FOUND') {
-      return res.status(404).json({
-        error: err.message,
-      });
-    }
-
-    // Handle 403 Forbidden (not the owner)
-    if (err && err.code === 'FORBIDDEN') {
-      return res.status(403).json({
-        error: err.message,
-      });
-    }
-
-    console.error("Error updating note:", err.message);
-    return res.status(500).json({
-      error: "Failed to update note",
-    });
+    const status = mapErrorToStatus(err)
+    console.error('Error updating note:', err.message)
+    return res.status(status).json({ error: mapErrorMessage(err, 'Failed to update note') })
   }
 }
 
-// Delete a note
-// Only the note owner can delete it
+// Delete a note by note id (legacy)
 async function deleteNoteHandler(req, res) {
   try {
-    // Extract note ID from URL parameter
-    const { id } = req.params;
+    const { id } = req.params
+    const { userId } = req.body
 
-    // Extract userId from request body
-    const { userId } = req.body;
+    await deleteNote(id, userId)
 
-    // Validate userId is provided
-    if (!userId) {
-      return res.status(401).json({
-        error: "User authentication required",
-      });
-    }
-
-    // Call service layer to delete the note
-    await deleteNote(id, userId);
-
-    // Return 204 No Content on successful deletion
-    return res.status(204).send();
+    return res.status(204).send()
   } catch (err) {
-    // Handle 404 Not Found
-    if (err && err.code === 'NOT_FOUND') {
-      return res.status(404).json({
-        error: err.message,
-      });
-    }
-
-    // Handle 403 Forbidden (not the owner)
-    if (err && err.code === 'FORBIDDEN') {
-      return res.status(403).json({
-        error: err.message,
-      });
-    }
-
-    console.error("Error deleting note:", err.message);
-    return res.status(500).json({
-      error: "Failed to delete note",
-    });
+    const status = mapErrorToStatus(err)
+    console.error('Error deleting note:', err.message)
+    return res.status(status).json({ error: mapErrorMessage(err, 'Failed to delete note') })
   }
 }
 
-// Export the handlers
+// Get a user's note for a watchlisted market
+async function getUserNoteForMarketHandler(req, res) {
+  try {
+    const { userId, marketId } = req.params
+    const note = await getNoteForUserMarket(userId, marketId)
+
+    return res.status(200).json({ success: true, data: { note } })
+  } catch (err) {
+    const status = mapErrorToStatus(err)
+    console.error('Error fetching note:', err.message)
+    return res.status(status).json({ error: mapErrorMessage(err, 'Failed to fetch note') })
+  }
+}
+
+// Upsert a user's note for a watchlisted market
+async function upsertUserNoteForMarketHandler(req, res) {
+  try {
+    const { userId, marketId } = req.params
+    const { content } = req.body
+
+    const note = await upsertNoteForUserMarket(userId, marketId, content)
+
+    return res.status(200).json({ success: true, data: { note } })
+  } catch (err) {
+    const status = mapErrorToStatus(err)
+    console.error('Error saving note:', err.message)
+    return res.status(status).json({ error: mapErrorMessage(err, 'Failed to save note') })
+  }
+}
+
+// Delete a user's note for a watchlisted market
+async function deleteUserNoteForMarketHandler(req, res) {
+  try {
+    const { userId, marketId } = req.params
+    await deleteNoteForUserMarket(userId, marketId)
+    return res.status(204).send()
+  } catch (err) {
+    const status = mapErrorToStatus(err)
+    console.error('Error deleting user note:', err.message)
+    return res.status(status).json({ error: mapErrorMessage(err, 'Failed to delete note') })
+  }
+}
+
 module.exports = {
   createNoteHandler,
   listNotesHandler,
   updateNoteHandler,
   deleteNoteHandler,
-};
+  getUserNoteForMarketHandler,
+  upsertUserNoteForMarketHandler,
+  deleteUserNoteForMarketHandler,
+}

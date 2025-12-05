@@ -38,6 +38,9 @@
         </li>
       </ul>
     </div>
+    <div class="market-card-actions" v-if="$slots.actions">
+      <slot name="actions"></slot>
+    </div>
   </div>
 </template>
 
@@ -113,5 +116,13 @@ export default {
 .chip-no {
   background-color: rgba(231, 76, 60, 0.15);
   color: #e74c3c;
+}
+.market-card-actions {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 </style>
