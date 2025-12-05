@@ -1,10 +1,8 @@
+const crypto = require('crypto')
+
 function generateId() {
-  let result = '';
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const len = 16;
-  for (let i = 0; i < len; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+  // 12 random bytes -> base64url gives ~16 chars; slice to 16 for consistent length
+  return crypto.randomBytes(12).toString('base64url').slice(0, 16)
 }
-module.exports = generateId;
+
+module.exports = generateId
