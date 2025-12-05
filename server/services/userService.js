@@ -1,6 +1,7 @@
 // services/userService.js
 const User = require("../models/User");
 const generateId = require("../utils/IDcreation");
+const { createCategory } = require("./categoryService");
 
 /**
  * Create a new user with a generated 16-character id.
@@ -16,6 +17,15 @@ async function createUser(username) {
     characterString: id, // Database field name (historical), stores the user id
     username: finalUsername,
   });
+
+  // Automatically create a "Tech" category for the new user
+  // Using the MongoDB _id (internal ID) for the category userId
+  try {
+    await createCategory(user._id, "Tech");
+  } catch (err) {
+    // Log error but don't fail user creation if category creation fails
+    console.error("Failed to create Tech category for new user:", err);
+  }
 
   return user;
 }

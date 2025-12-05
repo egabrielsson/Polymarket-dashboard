@@ -3,6 +3,7 @@
 // A Market stores a reference to an external Polymarket via polymarketId
 
 const Market = require("../models/Market");
+const Watchlist = require("../models/Watchlist");
 const { fetchMarketById } = require("./polymarketService");
 
 /**
@@ -145,6 +146,7 @@ async function deleteMarket(marketId) {
 // Delete the entire markets collection
 async function deleteAllMarkets() {
   await Market.deleteMany({});
+  await Watchlist.deleteMany({});
 }
 
 // Export the service functions
