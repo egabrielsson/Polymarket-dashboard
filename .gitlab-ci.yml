@@ -28,7 +28,6 @@ test:
       alias: mongo
   variables:
     MONGODB_URI: "mongodb://mongo:27017/serverTestDB"
-    ADMIN_DELETE_TOKEN: "ci-cleanup"
   script:
     - cd server
     - npm run ci-test
