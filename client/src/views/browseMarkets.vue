@@ -47,9 +47,6 @@
       </b-row>
     </b-form>
 
-    <b-alert v-if="!activeUserId" variant="warning" show class="mb-4">
-      Set <code>VITE_TEST_USER_ID</code> in your <code>.env</code> to enable watchlist features.
-    </b-alert>
 
     <div v-if="loading" class="text-muted">Loading markets…</div>
     <div v-else-if="error" class="text-danger">{{ error }}</div>
@@ -63,9 +60,8 @@
         lg="4"
         xl="3"
       >
-        <div class="position-relative">
-          <MarketCard :market="market" />
-          <div class="mt-2">
+        <MarketCard :market="market">
+          <template #actions>
             <b-button
               variant="primary"
               size="sm"
@@ -80,8 +76,8 @@
               />
               Add to Watchlist
             </b-button>
-          </div>
-        </div>
+          </template>
+        </MarketCard>
       </b-col>
     </b-row>
   </b-container>
