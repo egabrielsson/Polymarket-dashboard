@@ -47,6 +47,10 @@
                     {{ option.name }}
                   </option>
                 </select>
+                <MarketNotesModal
+                  :market-id="market._id"
+                  :market-title="market.title"
+                />
                 <button
                   type="button"
                   class="btn btn-outline-danger btn-sm"
@@ -72,11 +76,13 @@
 
 <script>
 import MarketCard from '@/components/MarketCard.vue'
+import MarketNotesModal from '@/components/MarketNotesModal.vue'
 
 export default {
   name: 'CategoryColumn',
   components: {
-    MarketCard
+    MarketCard,
+    MarketNotesModal
   },
   props: {
     category: {
