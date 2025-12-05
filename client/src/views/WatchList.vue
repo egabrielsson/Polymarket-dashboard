@@ -31,10 +31,7 @@
           Create Category
         </b-button>
       </div>
-      <div
-        v-if="adminDeleteToken"
-        class="d-flex flex-wrap gap-2 align-items-center"
-      >
+      <div class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
           variant="outline-danger"
           class="border-2"
@@ -63,8 +60,7 @@
     </div>
 
     <b-alert v-if="!activeUserId" variant="warning" show class="mb-4">
-      Provide <code>VITE_TEST_USER_ID</code> in your <code>.env</code> so we can
-      load the stored watchlist.
+      Please log in to view your watchlist.
     </b-alert>
 
     <div v-if="categoryError" class="alert alert-danger" role="alert">
@@ -88,8 +84,10 @@
           :markets="category.markets"
           :all-categories="categoryOptions"
           :removing-markets="removingMarkets"
+          :deleting-categories="deletingCategories"
           @update-category="handleAssignCategory"
           @remove-market="handleRemoveMarket"
+          @delete-category="handleDeleteCategory"
         />
       </div>
     </div>
@@ -100,9 +98,9 @@
 import CategoryColumn from '@/components/CategoryColumn.vue'
 import { Api } from '@/Api'
 import { loadWatchlistMarketDetails } from '@/utils/watchlistHelper'
+import { useSessionStore } from '@/stores/sessionStore'
 
-const DEFAULT_USER_ID = import.meta.env.VITE_TEST_USER_ID || ''
-const ADMIN_DELETE_TOKEN = import.meta.env.VITE_ADMIN_DELETE_TOKEN || ''
+const sessionStore = useSessionStore()
 
 export default {
   name: 'WatchListView',
@@ -115,22 +113,22 @@ export default {
       loadingCategories: false,
       creatingCategory: false,
       categoryError: '',
-      activeUserId: DEFAULT_USER_ID,
       removingMarkets: {},
+      deletingCategories: {},
       deletingCollection: false,
       adminError: '',
       adminSuccess: '',
     }
   },
   computed: {
+    activeUserId() {
+      return sessionStore.session.user?.id || null
+    },
     categoryOptions() {
       return this.categories.map(({ _id, name }) => ({
         _id,
         name
       }))
-    },
-    adminDeleteToken() {
-      return ADMIN_DELETE_TOKEN
     }
   },
   created() {
@@ -212,20 +210,11 @@ export default {
       return Array.from(grouped.values())
     },
     async handleDeleteMarketsCollection() {
-      if (!this.adminDeleteToken) {
-        this.adminError = 'Admin delete token is not configured.'
-        return
-      }
-
       this.deletingCollection = true
       this.adminError = ''
       this.adminSuccess = ''
       try {
-        await Api.delete('/markets', {
-          headers: {
-            'x-admin-token': this.adminDeleteToken
-          }
-        })
+        await Api.delete('/markets')
         this.adminSuccess = 'Markets collection deleted; refreshing data.'
         await this.loadData()
       } catch (err) {
@@ -359,6 +348,53 @@ export default {
       }
 
       return clonedCategories
+    },
+    async handleDeleteCategory(categoryId) {
+      if (!this.activeUserId) {
+        return
+      }
+
+      const category = this.categories.find((cat) => cat._id === categoryId)
+      if (!category) {
+        return
+      }
+
+      // Confirm deletion
+      const confirmMessage = category.markets.length > 0
+        ? `Delete "${category.name}"? ${category.markets.length} market(s) will be moved to Uncategorized.`
+        : `Delete "${category.name}"?`
+      
+      if (!window.confirm(confirmMessage)) {
+        return
+      }
+
+      this.deletingCategories[categoryId] = true
+      this.categoryError = ''
+      
+      try {
+        // Move all markets in this category to uncategorized (null categoryId)
+        const movePromises = category.markets.map((market) =>
+          Api.patch(`/markets/${market._id}`, { categoryId: null })
+        )
+        await Promise.all(movePromises)
+
+        // Delete the category
+        await Api.delete(`/categories/${categoryId}`, {
+          data: { userId: this.activeUserId }
+        })
+
+        // Reload data to refresh the view
+        await this.loadData()
+      } catch (err) {
+        console.error('Failed to delete category', err)
+        this.categoryError =
+          err?.response?.data?.error ||
+          err.message ||
+          'Unable to delete category right now.'
+        await this.loadData()
+      } finally {
+        this.deletingCategories[categoryId] = false
+      }
     }
   }
 }

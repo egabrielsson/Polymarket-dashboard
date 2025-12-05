@@ -5,7 +5,22 @@
         <p class="text-uppercase text-muted fw-semibold small mb-1">Category</p>
         <h2 class="h5 mb-0">{{ category.name }}</h2>
       </div>
-      <span class="badge bg-light text-dark">{{ markets.length }} markets</span>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-dark">{{ markets.length }} markets</span>
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm"
+          @click="emitDelete"
+          :disabled="isDeleting()"
+        >
+          <span
+            v-if="isDeleting()"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          />
+          Delete
+        </button>
+      </div>
     </header>
     <div class="card-body">
       <div v-if="markets.length" class="watchlist-market-grid">
@@ -79,6 +94,10 @@ export default {
     removingMarkets: {
       type: Object,
       default: () => ({})
+    },
+    deletingCategories: {
+      type: Object,
+      default: () => ({})
     }
   },
   computed: {
@@ -112,6 +131,12 @@ export default {
     },
     emitRemove(market) {
       this.$emit('remove-market', market._id)
+    },
+    isDeleting() {
+      return Boolean(this.deletingCategories[this.category._id])
+    },
+    emitDelete() {
+      this.$emit('delete-category', this.category._id)
     }
   }
 }
