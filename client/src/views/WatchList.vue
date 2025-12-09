@@ -5,14 +5,14 @@
     >
       <div>
         <h1 class="display-6 fw-semibold mb-0">Watchlist</h1>
-        <p class="text-muted mb-0">Organize your saved markets by category</p>
+        <p class="mb-0">Organize your saved markets by category</p>
       </div>
     </div>
 
     <div class="mb-3 d-flex flex-column gap-2">
       <div class="d-flex flex-wrap gap-2">
         <b-button
-          variant="outline-secondary"
+          variant="outline-primary"
           @click="loadData"
           :disabled="loadingCategories"
         >
@@ -23,11 +23,6 @@
           @click="handleCreateCategory"
           :disabled="creatingCategory"
         >
-          <span
-            v-if="creatingCategory"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          />
           Create Category
         </b-button>
         <b-form-select
@@ -52,11 +47,6 @@
           :disabled="deletingCollection"
           @click="handleDeleteMarketsCollection"
         >
-          <span
-            v-if="deletingCollection"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          />
           Delete markets collection
         </b-button>
       </div>
@@ -75,13 +65,11 @@
     <div v-if="categoryError" class="alert alert-danger" role="alert">
       {{ categoryError }}
     </div>
-    <div v-else-if="loadingCategories" class="text-muted">
-      Loading categories…
-    </div>
+    <div v-else-if="loadingCategories">Loading...</div>
     <div v-else>
       <div v-if="!categories.length" class="empty-state card p-4 text-center">
         <p class="mb-1 fw-semibold">No categories yet</p>
-        <p class="text-muted mb-0">
+        <p class="mb-0">
           Create your first category to start organizing markets.
         </p>
       </div>

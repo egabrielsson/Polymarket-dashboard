@@ -9,7 +9,7 @@
         <span class="sidebar__brand-primary">POLY</span>
         <span class="sidebar__brand-accent">WATCH</span>
       </h1>
-      <p class="text-white-50 mb-0 small">Navigate markets quickly</p>
+      <p class="text-white-50 mb-0 small">Navigate markets</p>
     </div>
     <!-- Bootstrap nav that stacks or stretches depending on screen size -->
     <nav class="nav flex-column flex-sm-row flex-md-column gap-2 w-100">

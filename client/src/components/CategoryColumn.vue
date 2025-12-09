@@ -2,7 +2,7 @@
   <article class="category-column card h-100 shadow-sm">
     <header class="card-header d-flex justify-content-between align-items-center">
       <div>
-        <p class="text-uppercase text-muted fw-semibold small mb-1">Category</p>
+        <p class="text-uppercase fw-semibold small mb-1">Category</p>
         <h2 class="h5 mb-0">{{ category.name }}</h2>
       </div>
       <div class="d-flex align-items-center gap-2">
@@ -13,11 +13,6 @@
           @click="emitDelete"
           :disabled="isDeleting()"
         >
-          <span
-            v-if="isDeleting()"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          />
           Delete
         </button>
       </div>
@@ -57,11 +52,6 @@
                   @click="emitRemove(market)"
                   :disabled="isRemoving(market)"
                 >
-                  <span
-                    v-if="isRemoving(market)"
-                    class="spinner-border spinner-border-sm me-2"
-                    role="status"
-                  />
                   Remove
                 </button>
               </div>
@@ -69,7 +59,7 @@
           </MarketCard>
         </div>
       </div>
-      <p v-else class="text-muted small mb-0">No markets added yet.</p>
+      <p v-else class="small mb-0">No markets added yet.</p>
     </div>
   </article>
 </template>
