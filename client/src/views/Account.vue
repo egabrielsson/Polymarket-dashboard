@@ -13,7 +13,7 @@
       {{ error }}
     </b-alert>
 
-    <div v-if="loading" class="text-muted">Loading account…</div>
+    <div v-if="loading">Loading...</div>
 
     <div v-else-if="!user" class="card p-4 shadow-sm">
       <p class="mb-2">You are logged out.</p>
@@ -40,7 +40,7 @@
         <hr />
 
         <h2 class="h6 mb-2">Update username</h2>
-        <p class="text-muted small mb-3">
+        <p class="small mb-3">
           Usernames are only cosmetic. The Account ID is your unique identifier.
         </p>
         <b-form @submit.prevent="handleUpdate">
@@ -61,12 +61,7 @@
                 class="w-100"
                 :disabled="loading"
               >
-                <span
-                  v-if="loading"
-                  class="spinner-border spinner-border-sm me-2"
-                  role="status"
-                />
-                Save username
+                Save
               </b-button>
             </b-col>
           </b-row>
