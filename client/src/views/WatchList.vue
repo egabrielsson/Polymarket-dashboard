@@ -327,9 +327,13 @@ export default {
     },
     async handleAssignCategory({ marketId, fromCategoryId, categoryId }) {
       try {
-        await Api.patch(`/markets/${marketId}`, {
-          categoryId: categoryId || null
-        })
+        // Update category in user's watchlist (not the shared market)
+        await Api.patch(
+          `/users/${this.activeUserId}/watchlists/${marketId}/category`,
+          {
+            categoryId: categoryId || null
+          }
+        )
         this.categories = this.moveMarketLocally(
           marketId,
           fromCategoryId,
@@ -441,7 +445,10 @@ export default {
       try {
         // Move all markets in this category to uncategorized (null categoryId)
         const movePromises = category.markets.map((market) =>
-          Api.patch(`/markets/${market._id}`, { categoryId: null })
+          Api.patch(
+            `/users/${this.activeUserId}/watchlists/${market._id}/category`,
+            { categoryId: null }
+          )
         )
         await Promise.all(movePromises)
 

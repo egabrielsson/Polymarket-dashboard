@@ -112,9 +112,29 @@ async function addToWatchlist(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/users/:userId/watchlists/:marketId/category
+ * Update the category for a market in user's watchlist
+ */
+async function updateWatchlistCategory(req, res, next) {
+  try {
+    const { userId, marketId } = req.params;
+    const { categoryId } = req.body;
+
+    await watchlistService.updateWatchlistCategory(userId, marketId, categoryId);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    if (err && err.code === 'BAD_REQUEST') return res.status(400).json({ error: err.message });
+    if (err && err.code === 'NOT_FOUND') return res.status(404).json({ error: err.message });
+    console.error('Error updating watchlist category:', err);
+    return res.status(502).json({ error: 'Failed to update category' });
+  }
+}
+
 module.exports = {
   addToWatchlist,
   getUserWatchlist,
   getWatchlistItem,
   removeFromWatchlist,
+  updateWatchlistCategory,
 };
