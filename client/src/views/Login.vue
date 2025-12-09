@@ -3,17 +3,17 @@
     <div class="row justify-content-center mb-4">
       <div class="col-lg-8 text-center">
         <h1 class="display-6 fw-semibold mb-2">Welcome to PolyWatch</h1>
-        <p class="text-muted mb-0">
+        <p class="mb-0">
           Create an account instantly, or sign in with your ID.
         </p>
       </div>
     </div>
 
     <div class="auth-stack mx-auto">
-      <div class="card shadow-sm auth-card order-1">
+      <div class="card shadow-sm auth-card order-1 border-primary">
         <div class="card-body">
           <h2 class="h5 mb-2">Sign In</h2>
-          <p class="text-muted small mb-3">Use your 16-digit account id.</p>
+          <p class="small mb-3">Use your 16-digit account id.</p>
           <b-alert
             v-if="loginError"
             variant="danger"
@@ -39,21 +39,16 @@
               class="w-100"
               :disabled="loggingIn"
             >
-              <span
-                v-if="loggingIn"
-                class="spinner-border spinner-border-sm me-2"
-                role="status"
-              />
               Sign In
             </b-button>
           </b-form>
         </div>
       </div>
 
-      <div class="card shadow-sm auth-card order-2">
-        <div class="card-body">
+      <div class="card shadow-sm auth-card order-2 border-primary">
+        <div class="card-body font-bold">
           <h2 class="h5 mb-2">Create Account</h2>
-          <p class="text-muted small mb-3">
+          <p class="small mb-3">
             We generate a 16-digit id and sign you in immediately.
           </p>
           <b-alert
@@ -73,10 +68,7 @@
             {{ createdMessage }}
           </b-alert>
           <b-form @submit.prevent="handleCreate">
-            <b-form-group
-              label="Cosmetic username (optional)"
-              label-for="usernameInput"
-            >
+            <b-form-group label="Username (optional)" label-for="usernameInput">
               <b-form-input
                 id="usernameInput"
                 v-model="desiredUsername"
@@ -90,21 +82,12 @@
               class="w-100"
               :disabled="creating"
             >
-              <span
-                v-if="creating"
-                class="spinner-border spinner-border-sm me-2"
-                role="status"
-              />
               Create & Sign In
             </b-button>
           </b-form>
         </div>
       </div>
     </div>
-
-    <p class="text-center text-muted small mt-4 mb-0">
-      Store your unique ID safely, it is the only key to your account.
-    </p>
   </section>
 </template>
 

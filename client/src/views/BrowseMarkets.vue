@@ -5,15 +5,9 @@
     >
       <div>
         <h1 class="display-6 fw-semibold mb-0">Browse Markets</h1>
-        <p class="text-muted mb-0">Live markets fetched from Polymarket</p>
+        <p class="mb-0">Live markets fetched from Polymarket</p>
       </div>
       <div class="d-flex gap-2">
-        <b-button
-          variant="outline-secondary"
-          @click="$router.push({ name: 'home' })"
-        >
-          Home
-        </b-button>
         <b-button
           variant="outline-primary"
           @click="fetchMarkets"
@@ -28,10 +22,7 @@
       <b-row class="g-3">
         <b-col cols="12" md="6" lg="4">
           <b-form-group label="Search">
-            <b-form-input
-              v-model="searchTerm"
-              placeholder="ex - Zuckerberg, AI, Gabagool..."
-            />
+            <b-form-input v-model="searchTerm" placeholder="" />
           </b-form-group>
         </b-col>
         <b-col cols="12" md="3" lg="2" class="d-flex align-items-end">
@@ -47,7 +38,7 @@
         <b-col cols="12" md="3" lg="2" class="d-flex align-items-end">
           <b-button
             type="button"
-            variant="outline-secondary"
+            variant="outline-primary"
             class="w-100"
             @click="clearSearch"
             :disabled="loading"
@@ -58,10 +49,10 @@
       </b-row>
     </b-form>
 
-    <div v-if="loading" class="text-muted">Loading markets…</div>
+    <div v-if="loading">Loading...</div>
     <div v-else-if="error" class="text-danger">{{ error }}</div>
     <div v-else-if="filteredMarkets.length === 0" class="text-center py-5">
-      <p class="text-muted mb-0">
+      <p class="mb-0">
         <span v-if="activeSearchTerm && activeSearchTerm.trim()">
           No markets found matching "{{ activeSearchTerm }}"
         </span>
@@ -87,11 +78,6 @@
                 @click="addToWatchlist(market)"
                 :disabled="addingToWatchlist[market.id] || !activeUserId"
               >
-                <span
-                  v-if="addingToWatchlist[market.id]"
-                  class="spinner-border spinner-border-sm me-2"
-                  role="status"
-                />
                 Add to Watchlist
               </b-button>
             </template>
@@ -99,7 +85,7 @@
         </b-col>
       </b-row>
       <div class="d-flex justify-content-between align-items-center">
-        <div class="text-muted">
+        <div>
           Page {{ currentPage }} of {{ totalPages }}
           <span v-if="filteredMarkets.length > 0">
             ({{ (currentPage - 1) * marketsPerPage + 1 }}-{{
@@ -205,7 +191,6 @@ export default {
 
     async addToWatchlist(market) {
       if (!this.activeUserId) {
-        alert('Please log in to add markets to your watchlist.')
         this.$router.push({ name: 'login' })
         return
       }
@@ -214,7 +199,6 @@ export default {
       try {
         let savedMarketId = null
 
-        // First, try to save the market to database (gets MongoDB _id)
         try {
           const { data: marketData } = await Api.post('/markets', {
             polymarketId: market.id,
@@ -222,7 +206,6 @@ export default {
           })
           savedMarketId = marketData?.data?._id
         } catch (marketErr) {
-          // If market already exists (409), fetch it by polymarketId
           if (marketErr?.response?.status === 409) {
             const { data } = await Api.get('/markets')
             const markets = data?.data || []
@@ -239,18 +222,11 @@ export default {
           }
         }
 
-        // Then add the saved market to watchlist using MongoDB _id
         await Api.post(`/users/${this.activeUserId}/watchlists`, {
           marketId: savedMarketId
         })
-        alert(`Added "${market.title}" to your watchlist!`)
       } catch (err) {
         console.error('Failed to add to watchlist', err)
-        alert(
-          err?.response?.data?.error ||
-            err.message ||
-            'Failed to add to watchlist. Try again.'
-        )
       } finally {
         this.addingToWatchlist[market.id] = false
       }

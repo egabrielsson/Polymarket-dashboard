@@ -9,6 +9,7 @@ const {
   getUserWatchlist,
   getWatchlistItem,
   removeFromWatchlist,
+  updateWatchlistCategory,
 } = require("../controllers/watchlistController")
 const {
   getUserNoteForMarketHandler,
@@ -35,6 +36,10 @@ router.get("/users/:userId/watchlists/:marketId", getWatchlistItem)
 // Returns 204 if succeded
 // Returns 502 if failed
 router.delete("/users/:userId/watchlists/:marketId", removeFromWatchlist)
+
+// PATCH /api/users/:userId/watchlists/:marketId/category
+// Update the category for a market in user's watchlist
+router.patch("/users/:userId/watchlists/:marketId/category", updateWatchlistCategory)
 
 // NOTE ROUTES - User-specific note attached to a watchlisted market
 router.get(
