@@ -125,7 +125,7 @@ async function getMarketsByCategory(req, res) {
 
 async function getTechMarketsHandler(req, res) {
   try {
-    const limit = Math.min(parseInt(req.query.limit || "36", 10), 100);
+    const limit = Math.min(parseInt(req.query.limit || "100", 10), 100);
     const search = req.query.search || "";
 
     const result = await getTechMarkets(limit, 0, search); // call on service to get tech markets
