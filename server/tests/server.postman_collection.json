@@ -367,9 +367,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// createMarket",
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
+                  "// createMarket (idempotent: 201 if created, 200 if exists)",
+                  "pm.test(\"Status code is 200 or 201\", function () {",
+                  "    pm.expect([200, 201]).to.include(pm.response.code);",
                   "});",
                   "",
                   "pm.test(\"Response has success true\", function () {",

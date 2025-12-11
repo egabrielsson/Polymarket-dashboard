@@ -100,11 +100,6 @@ export default {
   letter-spacing: 0.08em;
 }
 
-.sidebar__brand {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
 /* POLY text stays slightly smaller so WATCH feels more prominent */
 .sidebar__brand-primary {
   display: inline-block;
