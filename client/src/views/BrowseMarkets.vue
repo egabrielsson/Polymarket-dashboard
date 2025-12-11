@@ -51,7 +51,7 @@
 
     <div v-if="loading">Loading...</div>
     <div v-else-if="error" class="text-danger">{{ error }}</div>
-    <div v-else-if="filteredMarkets.length === 0" class="text-center py-5">
+    <div v-else-if="markets.length === 0" class="text-center py-5">
       <p class="mb-0">
         <span v-if="activeSearchTerm && activeSearchTerm.trim()">
           No markets found matching "{{ activeSearchTerm }}"
@@ -62,8 +62,8 @@
     <div v-else>
       <b-row class="g-4 mb-4">
         <b-col
-          v-for="market in displayedMarkets"
-          :key="market.id"
+          v-for="market in markets"
+          :key="market._id"
           cols="12"
           md="6"
           lg="4"
@@ -76,7 +76,7 @@
                 size="sm"
                 class="w-100"
                 @click="addToWatchlist(market)"
-                :disabled="addingToWatchlist[market.id] || !activeUserId"
+                :disabled="addingToWatchlist[market._id] || !activeUserId"
               >
                 Add to Watchlist
               </b-button>
@@ -87,11 +87,11 @@
       <div class="d-flex justify-content-between align-items-center">
         <div>
           Page {{ currentPage }} of {{ totalPages }}
-          <span v-if="filteredMarkets.length > 0">
+          <span v-if="totalMarkets > 0">
             ({{ (currentPage - 1) * marketsPerPage + 1 }}-{{
-              Math.min(currentPage * marketsPerPage, filteredMarkets.length)
+              Math.min(currentPage * marketsPerPage, totalMarkets)
             }}
-            of {{ filteredMarkets.length }})
+            of {{ totalMarkets }})
           </span>
         </div>
         <div class="d-flex gap-2">
@@ -118,7 +118,6 @@
 <script>
 import MarketCard from '@/components/MarketCard.vue'
 import { Api } from '@/Api'
-import { normalizePolymarketMarket } from '@/utils/marketNormalizer'
 import { useSessionStore } from '@/stores/sessionStore'
 
 const sessionStore = useSessionStore()
@@ -130,63 +129,82 @@ export default {
   },
   data() {
     return {
-      allMarkets: [], // All fetched markets
+      markets: [], // Markets from current query
       loading: false,
       error: '',
       searchTerm: '', // Current input value
-      activeSearchTerm: '', // Search term used for filtering (only updates on Apply)
+      activeSearchTerm: '', // Search term used for backend query
       addingToWatchlist: {},
       currentPage: 1,
       marketsPerPage: 12,
-      presetLimit: 50 // Preset limit for fetching
+      totalMarkets: 0 // Total count from backend for pagination
     }
   },
   computed: {
     activeUserId() {
       return sessionStore.session.user?.id || null
     },
-    filteredMarkets() {
-      // Filter markets based on active search term
-      if (!this.activeSearchTerm || !this.activeSearchTerm.trim()) {
-        return this.allMarkets
-      }
-      const searchLower = this.activeSearchTerm.toLowerCase().trim()
-      return this.allMarkets.filter((market) => {
-        const title = (market.title || '').toLowerCase()
-        return title.includes(searchLower)
-      })
-    },
-    displayedMarkets() {
-      // Get markets for current page
-      const start = (this.currentPage - 1) * this.marketsPerPage
-      const end = start + this.marketsPerPage
-      return this.filteredMarkets.slice(start, end)
-    },
     totalPages() {
-      return Math.ceil(this.filteredMarkets.length / this.marketsPerPage)
+      return Math.ceil(this.totalMarkets / this.marketsPerPage)
     }
   },
   mounted() {
-    this.fetchMarkets()
+    this.syncAndLoad()
   },
   methods: {
-    async fetchMarkets() {
+    // Sync fresh data from Polymarket, then load from MongoDB
+    async syncAndLoad() {
       this.loading = true
       this.error = ''
       try {
-        const params = {
-          limit: this.presetLimit
-        }
-        const { data } = await Api.get('/polymarkets/tech-markets', { params })
-        const marketsPayload = data?.data?.markets || []
-        this.allMarkets = marketsPayload.map(normalizePolymarketMarket)
-        this.currentPage = 1 // Reset to first page when fetching new markets
+        // Step 1: Sync from Polymarket API to MongoDB
+        await Api.get('/polymarkets/tech-markets', { params: { limit: 100 } })
+        // Step 2: Load from MongoDB with pagination
+        await this.loadFromMongo()
       } catch (err) {
-        console.error('Failed to load markets', err)
+        console.error('Failed to sync markets', err)
         this.error = 'Unable to load markets right now.'
       } finally {
         this.loading = false
       }
+    },
+
+    // Load markets from MongoDB with backend filtering, sorting, pagination
+    async loadFromMongo() {
+      this.loading = true
+      this.error = ''
+      try {
+        const offset = (this.currentPage - 1) * this.marketsPerPage
+        const params = {
+          limit: this.marketsPerPage,
+          offset,
+          sort: '-volume' // Sort by volume descending (backend sorting)
+        }
+        if (this.activeSearchTerm) {
+          params.search = this.activeSearchTerm // Backend filtering
+        }
+
+        const { data } = await Api.get('/markets', { params })
+        this.markets = (data?.data || []).map((m) => ({
+          ...m,
+          id: m.polymarketId, // For MarketCard compatibility
+          title: m.title
+        }))
+        this.totalMarkets = data?.pagination?.total || 0
+      } catch (err) {
+        console.error('Failed to load markets from MongoDB', err)
+        this.error = 'Unable to load markets right now.'
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchMarkets() {
+      // Refresh: re-sync from Polymarket and reload
+      this.currentPage = 1
+      this.activeSearchTerm = ''
+      this.searchTerm = ''
+      await this.syncAndLoad()
     },
 
     async addToWatchlist(market) {
@@ -195,60 +213,50 @@ export default {
         return
       }
 
-      this.addingToWatchlist[market.id] = true
+      const marketKey = market.id || market._id
+      this.addingToWatchlist[marketKey] = true
       try {
-        let savedMarketId = null
-
-        try {
-          const { data: marketData } = await Api.post('/markets', {
-            polymarketId: market.id,
-            categoryId: null
-          })
-          savedMarketId = marketData?.data?._id
-        } catch (marketErr) {
-          if (marketErr?.response?.status === 409) {
-            const { data } = await Api.get('/markets')
-            const markets = data?.data || []
-            const existingMarket = markets.find(
-              (m) => m.polymarketId === market.id
-            )
-            if (existingMarket) {
-              savedMarketId = existingMarket._id
-            } else {
-              throw new Error('Market exists but could not be found')
-            }
-          } else {
-            throw marketErr
-          }
-        }
+        // POST /markets is idempotent - returns existing or creates new
+        const { data: marketData } = await Api.post('/markets', {
+          polymarketId: market.id || market.polymarketId
+        })
+        const marketId = marketData?.data?._id
 
         await Api.post(`/users/${this.activeUserId}/watchlists`, {
-          marketId: savedMarketId
+          marketId
         })
       } catch (err) {
         console.error('Failed to add to watchlist', err)
       } finally {
-        this.addingToWatchlist[market.id] = false
+        this.addingToWatchlist[marketKey] = false
       }
     },
-    applySearch() {
-      // Apply the search term to active filter
+
+    async applySearch() {
+      // Backend filtering: query MongoDB with search term
       this.activeSearchTerm = this.searchTerm
-      this.currentPage = 1 // Reset to first page when searching
+      this.currentPage = 1
+      await this.loadFromMongo()
     },
-    clearSearch() {
+
+    async clearSearch() {
       this.searchTerm = ''
       this.activeSearchTerm = ''
-      this.currentPage = 1 // Reset to first page when clearing search
+      this.currentPage = 1
+      await this.loadFromMongo()
     },
-    nextPage() {
+
+    async nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++
+        await this.loadFromMongo()
       }
     },
-    previousPage() {
+
+    async previousPage() {
       if (this.currentPage > 1) {
         this.currentPage--
+        await this.loadFromMongo()
       }
     }
   }

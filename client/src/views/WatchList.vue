@@ -25,20 +25,6 @@
         >
           Create Category
         </b-button>
-        <b-form-select
-          v-model="volumeFilter"
-          size="sm"
-          class="w-auto"
-          :options="volumeFilterOptions"
-          title="Filter by 24h volume"
-        />
-        <b-form-select
-          v-model="volumeSort"
-          size="sm"
-          class="w-auto"
-          :options="volumeSortOptions"
-          title="Sort by 24h volume"
-        />
       </div>
       <div v-if="isAdminUser" class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
@@ -75,7 +61,7 @@
       </div>
       <div v-else class="category-grid">
         <CategoryColumn
-          v-for="category in filteredCategories"
+          v-for="category in categories"
           :key="category._id"
           :category="category"
           :markets="category.markets"
@@ -94,7 +80,6 @@
 <script>
 import CategoryColumn from '@/components/CategoryColumn.vue'
 import { Api } from '@/Api'
-import { loadWatchlistMarketDetails } from '@/utils/watchlistHelper'
 import { useSessionStore } from '@/stores/sessionStore'
 
 const sessionStore = useSessionStore()
@@ -114,9 +99,7 @@ export default {
       deletingCategories: {},
       deletingCollection: false,
       adminError: '',
-      adminSuccess: '',
-      volumeFilter: 'all',
-      volumeSort: 'desc'
+      adminSuccess: ''
     }
   },
   computed: {
@@ -132,75 +115,12 @@ export default {
         _id,
         name
       }))
-    },
-    volumeFilterOptions() {
-      return [
-        { value: 'all', text: 'Volume: All' },
-        { value: 'high100', text: 'Volume ≥ 100k' },
-        { value: 'high250', text: 'Volume ≥ 250k' },
-        { value: 'high500', text: 'Volume ≥ 500k' },
-        { value: 'high1m', text: 'Volume ≥ 1M' },
-        { value: 'low100', text: 'Volume < 100k' }
-      ]
-    },
-    volumeSortOptions() {
-      return [
-        { value: 'desc', text: 'Volume: High → Low' },
-        { value: 'asc', text: 'Volume: Low → High' }
-      ]
-    },
-    filteredCategories() {
-      return this.categories.map((category) => {
-        const filteredMarkets = category.markets
-          .filter((market) => this.passesVolumeFilter(market))
-          .sort((a, b) => this.compareVolume(a, b))
-        return { ...category, markets: filteredMarkets }
-      })
     }
   },
   created() {
     this.loadData()
   },
   methods: {
-    getVolumeValue(market) {
-      const rawVolume =
-        market.volume ||
-        market.volume24hr ||
-        market.volumeNum ||
-        market.volumeClob ||
-        0
-      const numeric = Number(rawVolume)
-      return Number.isFinite(numeric) ? numeric : 0
-    },
-    passesVolumeFilter(market) {
-      const volume = this.getVolumeValue(market)
-      const thresholds = {
-        high100: 100000,
-        high250: 250000,
-        high500: 500000,
-        high1m: 1000000,
-        low100: 100000
-      }
-
-      if (this.volumeFilter === 'all') {
-        return true
-      }
-
-      if (this.volumeFilter === 'low100') {
-        return volume < thresholds.low100
-      }
-
-      const min = thresholds[this.volumeFilter] || 0
-      return volume >= min
-    },
-    compareVolume(a, b) {
-      const volA = this.getVolumeValue(a)
-      const volB = this.getVolumeValue(b)
-      if (this.volumeSort === 'asc') {
-        return volA - volB
-      }
-      return volB - volA
-    },
     async loadData() {
       this.loadingCategories = true
       this.categoryError = ''
@@ -209,11 +129,8 @@ export default {
           this.fetchCategories(),
           this.fetchWatchlist()
         ])
-        const watchlistWithDetails = await loadWatchlistMarketDetails(watchlist)
-        this.categories = this.combineCategoriesWithMarkets(
-          categories,
-          watchlistWithDetails
-        )
+        // MongoDB watchlist data already contains all market fields (image, volume, etc.)
+        this.categories = this.combineCategoriesWithMarkets(categories, watchlist)
       } catch (err) {
         console.error('Failed to load watchlist data', err)
         this.categoryError =

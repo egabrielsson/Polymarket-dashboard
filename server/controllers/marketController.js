@@ -4,6 +4,7 @@
 
 // this const helps us call the service layer functions
 const {
+  findByPolymarketId,
   createMarket,
   listMarkets,
   getMarket,
@@ -13,60 +14,57 @@ const {
 } = require("../services/marketService");
 
 /**
- * POST /api/markets
- * Create and store a new Market with polymarketId reference
+ * POST /api/markets (idempotent)
+ * Returns existing market if found, creates new one if not
  *
  * Request body:
  * {
- *   "polymarketId": "516950",                    // required: external Polymarket ID
- *   "categoryId": "507f1f77bcf86cd799439011"   // optional: user's local category
+ *   "polymarketId": "516950"  // required: external Polymarket ID
  * }
  *
  * Responses:
- * - 201 Created: Market successfully stored in MongoDB
- * - 400 Bad Request: Missing polymarketId or invalid polymarketId
- * - 409 Conflict: polymarketId already exists (duplicate)
+ * - 200 OK: Market already exists, returned existing
+ * - 201 Created: Market successfully created
+ * - 400 Bad Request: Missing or invalid polymarketId
  * - 500 Internal Server Error: Unexpected error
  */
 
-// A HTTP handler to create a new Market
+// A HTTP handler to get or create a Market (idempotent from client perspective)
+// Returns existing market if found, creates new one if not
 async function createMarketHandler(req, res) {
   try {
-    // Extract fields from request body
-    const { polymarketId, categoryId } = req.body;
+    const { polymarketId } = req.body;
 
-    // Validate required field is present
     if (!polymarketId) {
       return res.status(400).json({
         error: "polymarketId is required",
       });
     }
 
-    // Call service layer to create market
-    const market = await createMarket(polymarketId, categoryId);
+    // Try to find existing market first
+    const existing = await findByPolymarketId(polymarketId);
+    if (existing) {
+      return res.status(200).json({
+        success: true,
+        message: "Market already exists",
+        data: existing,
+      });
+    }
 
-    // Return 201 Created with saved market data
+    // Create new market
+    const market = await createMarket(polymarketId);
     return res.status(201).json({
       success: true,
       message: "Market created successfully",
       data: market,
     });
   } catch (err) {
-    // Handle 409 Conflict (duplicate polymarketId)
-    if (err && err.code === 'DUPLICATE') {
-      return res.status(409).json({
-        error: err.message,
-      });
-    }
-
-    // Handle 400 Bad Request (invalid polymarketId on Polymarket API)
     if (err.message.includes("Invalid polymarketId")) {
       return res.status(400).json({
         error: err.message,
       });
     }
 
-    // Handle unexpected errors (500 Internal Server Error)
     console.error("Error creating market:", err.message);
     return res.status(500).json({
       error: "Failed to create market",

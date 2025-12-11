@@ -2,7 +2,7 @@
 // It defines controller functions for various endpoints
 // such as fetching markets, searching, and category-specific queries.
 // It communicates with the polymarketService for data retrieval
-// and uses fileWriter utility to save debug data when needed.
+// and syncs markets to MongoDB for local storage.
 // The routes for these controllers are defined in routes/polymarket.js
 
 const {
@@ -11,12 +11,33 @@ const {
   getMarketsByTag,
   getTechMarkets,
 } = require("../services/polymarketService");
+const { transformPolymarketData } = require("../services/marketService");
+const Market = require("../models/Market");
+
+/**
+ * Upsert markets from Polymarket into MongoDB
+ */
+async function syncMarketsToMongo(polymarketData) {
+  if (!Array.isArray(polymarketData) || polymarketData.length === 0) {
+    return;
+  }
+
+  const operations = polymarketData.map(pm => ({
+    updateOne: {
+      filter: { polymarketId: pm.id },
+      update: { $set: transformPolymarketData(pm) },
+      upsert: true
+    }
+  }));
+
+  await Market.bulkWrite(operations);
+}
 
 /**
  * GET /api/polymarkets/markets/:pmId
  * Fetch a single market by ID
  */
-async function getMarket(req, res, next) {
+async function getMarket(req, res) {
   try {
     const { pmId } = req.params;
 
@@ -46,7 +67,7 @@ async function getMarket(req, res, next) {
  * GET /api/polymarkets/markets
  * Search markets with optional query and pagination
  */
-async function listMarkets(req, res, next) {
+async function listMarkets(req, res) {
   try {
     const query = req.query.search || "";
     const limit = Math.min(parseInt(req.query.limit || "20", 10), 200);
@@ -68,7 +89,7 @@ async function listMarkets(req, res, next) {
 //GET /api/polymarkets/categories/:slug/markets
 // Fetch markets by category (tag) slug
 // slug - category tag slug from Polymarket
-async function getMarketsByCategory(req, res, next) {
+async function getMarketsByCategory(req, res) {
   try {
     const { slug } = req.params;
     const limit = Math.min(parseInt(req.query.limit || "100", 10), 20); // Limit the results to 20
@@ -102,12 +123,18 @@ async function getMarketsByCategory(req, res, next) {
 // Allowing clients to easily retrieve specific datasets without complex queries
 // Making it easier when doing frontend development
 
-async function getTechMarketsHandler(req, res, next) {
+async function getTechMarketsHandler(req, res) {
   try {
-    const limit = Math.min(parseInt(req.query.limit || "20", 10), 20);
+    const limit = Math.min(parseInt(req.query.limit || "100", 10), 100);
     const search = req.query.search || "";
 
     const result = await getTechMarkets(limit, 0, search); // call on service to get tech markets
+    
+    // Sync fetched markets to MongoDB for local storage
+    if (result.markets && result.markets.length > 0) {
+      await syncMarketsToMongo(result.markets);
+    }
+    
     return res.json({ success: true, data: result }); // Return the result as JSON response
   } catch (err) {
     if (err.message.includes("Tag not found")) {
