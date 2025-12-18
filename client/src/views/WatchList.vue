@@ -44,6 +44,34 @@
       </b-alert>
     </div>
 
+    <!-- Create Category Modal -->
+    <b-modal
+      v-model="showCreateCategoryModal"
+      title="Create Category"
+      size="sm"
+      @hide="newCategoryName = ''"
+    >
+      <b-form-input
+        v-model="newCategoryName"
+        placeholder="Category name"
+        autofocus
+        @keyup.enter="confirmCreateCategory"
+      />
+      <template #footer>
+        <b-button variant="outline-secondary" size="sm" @click="showCreateCategoryModal = false">
+          Cancel
+        </b-button>
+        <b-button
+          variant="primary"
+          size="sm"
+          :disabled="!newCategoryName.trim() || creatingCategory"
+          @click="confirmCreateCategory"
+        >
+          Create
+        </b-button>
+      </template>
+    </b-modal>
+
     <b-alert v-if="!activeUserId" variant="warning" show class="mb-4">
       Please log in to view your watchlist.
     </b-alert>
@@ -99,7 +127,9 @@ export default {
       deletingCategories: {},
       deletingCollection: false,
       adminError: '',
-      adminSuccess: ''
+      adminSuccess: '',
+      showCreateCategoryModal: false,
+      newCategoryName: ''
     }
   },
   computed: {
@@ -210,19 +240,18 @@ export default {
         this.deletingCollection = false
       }
     },
-    async handleCreateCategory() {
-      const name = window.prompt('Name your new category')
+    handleCreateCategory() {
+      this.showCreateCategoryModal = true
+    },
+    async confirmCreateCategory() {
+      const name = this.newCategoryName.trim()
       if (!name) {
         return
       }
       this.creatingCategory = true
       try {
-        const trimmedName = name.trim()
-        if (!trimmedName) {
-          return
-        }
         const payload = {
-          name: trimmedName,
+          name,
           userId: this.activeUserId || null
         }
         const { data } = await Api.post('/categories', payload)
@@ -234,6 +263,8 @@ export default {
             markets: []
           }
         ]
+        this.showCreateCategoryModal = false
+        this.newCategoryName = ''
       } catch (err) {
         console.error('Failed to create category', err)
         this.categoryError =
