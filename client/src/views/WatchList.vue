@@ -27,14 +27,22 @@
           Create Category
         </b-button>
         <div class="d-flex align-items-center gap-2 ms-auto">
-          <label for="sort-select" class="mb-0 small">Sort by:</label>
-          <b-form-select
-            id="sort-select"
-            v-model="sortOrder"
-            :options="sortOptions"
+          <span class="mb-0 small fw-semibold">Sort by:</span>
+          <b-dropdown
+            :text="currentSortLabel"
             size="sm"
-            class="w-auto"
-          />
+            variant="outline-secondary"
+            class="sort-dropdown"
+          >
+            <b-dropdown-item
+              v-for="option in sortOptions"
+              :key="option.value"
+              :active="sortOrder === option.value"
+              @click="sortOrder = option.value"
+            >
+              {{ option.text }}
+            </b-dropdown-item>
+          </b-dropdown>
         </div>
       </div>
       <div v-if="isAdminUser" class="d-flex flex-wrap gap-2 align-items-center">
@@ -163,6 +171,10 @@ export default {
         _id,
         name
       }))
+    },
+    currentSortLabel() {
+      const option = this.sortOptions.find((o) => o.value === this.sortOrder)
+      return option ? option.text : 'Sort'
     },
     sortedCategories() {
       const sorted = [...this.categories]
@@ -457,6 +469,24 @@ export default {
 <style scoped>
 .watchlist-view {
   min-height: calc(100vh - 4rem);
+}
+
+.sort-dropdown :deep(.btn) {
+  background-color: #fff;
+  color: #1f2933;
+}
+
+.sort-dropdown :deep(.dropdown-menu) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sort-dropdown :deep(.dropdown-item) {
+  color: #1f2933;
+}
+
+.sort-dropdown :deep(.dropdown-item.active) {
+  background-color: var(--poly-blue);
+  color: #fff;
 }
 
 .category-grid {
