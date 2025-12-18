@@ -140,12 +140,13 @@ export default {
 
 <style scoped>
 .category-column {
-  min-width: 280px;
+  min-width: 0;
+  width: 100%;
 }
 
 .watchlist-market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 1rem;
 }
 
