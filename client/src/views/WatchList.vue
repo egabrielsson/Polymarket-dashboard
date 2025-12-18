@@ -10,7 +10,7 @@
     </div>
 
     <div class="mb-3 d-flex flex-column gap-2">
-      <div class="d-flex flex-wrap gap-2">
+      <div class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
           variant="outline-primary"
           @click="loadData"
@@ -25,6 +25,16 @@
         >
           Create Category
         </b-button>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <label for="sort-select" class="mb-0 small text-muted">Sort by:</label>
+          <b-form-select
+            id="sort-select"
+            v-model="sortOrder"
+            :options="sortOptions"
+            size="sm"
+            class="w-auto"
+          />
+        </div>
       </div>
       <div v-if="isAdminUser" class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
@@ -89,7 +99,7 @@
       </div>
       <div v-else class="category-grid">
         <CategoryColumn
-          v-for="category in categories"
+          v-for="category in sortedCategories"
           :key="category._id"
           :category="category"
           :markets="category.markets"
@@ -129,7 +139,12 @@ export default {
       adminError: '',
       adminSuccess: '',
       showCreateCategoryModal: false,
-      newCategoryName: ''
+      newCategoryName: '',
+      sortOrder: 'alphabetic',
+      sortOptions: [
+        { value: 'alphabetic', text: 'A-Z' },
+        { value: 'alphabetic-desc', text: 'Z-A' }
+      ]
     }
   },
   computed: {
@@ -145,6 +160,17 @@ export default {
         _id,
         name
       }))
+    },
+    sortedCategories() {
+      const sorted = [...this.categories]
+      switch (this.sortOrder) {
+        case 'alphabetic':
+          return sorted.sort((a, b) => a.name.localeCompare(b.name))
+        case 'alphabetic-desc':
+          return sorted.sort((a, b) => b.name.localeCompare(a.name))
+        default:
+          return sorted
+      }
     }
   },
   created() {
@@ -159,7 +185,6 @@ export default {
           this.fetchCategories(),
           this.fetchWatchlist()
         ])
-        // MongoDB watchlist data already contains all market fields (image, volume, etc.)
         this.categories = this.combineCategoriesWithMarkets(categories, watchlist)
       } catch (err) {
         console.error('Failed to load watchlist data', err)
