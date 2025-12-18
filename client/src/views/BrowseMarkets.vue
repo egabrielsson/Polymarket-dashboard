@@ -19,13 +19,13 @@
     </div>
 
     <b-form class="mb-4" @submit.prevent="applySearch">
-      <b-row class="g-3">
+      <b-row class="g-2 align-items-end">
         <b-col cols="12" md="6" lg="4">
-          <b-form-group label="Search">
+          <b-form-group label="Search" class="mb-0">
             <b-form-input v-model="searchTerm" placeholder="" />
           </b-form-group>
         </b-col>
-        <b-col cols="12" md="3" lg="2" class="d-flex align-items-end">
+        <b-col cols="6" md="3" lg="2">
           <b-button
             type="submit"
             variant="primary"
@@ -35,7 +35,7 @@
             Apply
           </b-button>
         </b-col>
-        <b-col cols="12" md="3" lg="2" class="d-flex align-items-end">
+        <b-col cols="6" md="3" lg="2">
           <b-button
             type="button"
             variant="outline-primary"
