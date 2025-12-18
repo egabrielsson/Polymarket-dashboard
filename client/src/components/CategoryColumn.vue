@@ -7,10 +7,7 @@
     >
       <div class="d-flex align-items-center gap-2">
         <span class="expand-icon" :class="{ expanded: isExpanded }">&#9654;</span>
-        <div>
-          <p class="text-uppercase fw-semibold small mb-1">Category</p>
-          <h2 class="h5 mb-0">{{ category.name }}</h2>
-        </div>
+        <h2 class="h5 mb-0">{{ category.name }}</h2>
       </div>
       <div class="d-flex align-items-center gap-2">
         <span class="badge bg-light text-dark">{{ markets.length }} markets</span>
