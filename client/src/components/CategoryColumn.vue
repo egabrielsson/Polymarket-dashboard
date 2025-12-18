@@ -1,23 +1,30 @@
 <template>
-  <article class="category-column card h-100 shadow-sm">
-    <header class="card-header d-flex justify-content-between align-items-center">
-      <div>
-        <p class="text-uppercase fw-semibold small mb-1">Category</p>
-        <h2 class="h5 mb-0">{{ category.name }}</h2>
+  <article class="category-column card shadow-sm">
+    <header
+      class="card-header d-flex justify-content-between align-items-center category-header"
+      @click="toggleExpanded"
+      role="button"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <span class="expand-icon" :class="{ expanded: isExpanded }">&#9654;</span>
+        <div>
+          <p class="text-uppercase fw-semibold small mb-1">Category</p>
+          <h2 class="h5 mb-0">{{ category.name }}</h2>
+        </div>
       </div>
       <div class="d-flex align-items-center gap-2">
         <span class="badge bg-light text-dark">{{ markets.length }} markets</span>
         <button
           type="button"
           class="btn btn-outline-danger btn-sm"
-          @click="emitDelete"
+          @click.stop="emitDelete"
           :disabled="isDeleting()"
         >
           Delete
         </button>
       </div>
     </header>
-    <div class="card-body">
+    <div v-show="isExpanded" class="card-body">
       <div v-if="markets.length" class="watchlist-market-grid">
         <div
           v-for="market in markets"
@@ -94,6 +101,15 @@ export default {
     deletingCategories: {
       type: Object,
       default: () => ({})
+    },
+    startExpanded: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      isExpanded: this.startExpanded
     }
   },
   computed: {
@@ -133,6 +149,9 @@ export default {
     },
     emitDelete() {
       this.$emit('delete-category', this.category._id)
+    },
+    toggleExpanded() {
+      this.isExpanded = !this.isExpanded
     }
   }
 }
@@ -142,6 +161,26 @@ export default {
 .category-column {
   min-width: 0;
   width: 100%;
+}
+
+.category-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.category-header:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.expand-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+  color: #1f2933;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
 }
 
 .watchlist-market-grid {
