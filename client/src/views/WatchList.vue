@@ -143,7 +143,9 @@ export default {
       sortOrder: 'alphabetic',
       sortOptions: [
         { value: 'alphabetic', text: 'A-Z' },
-        { value: 'alphabetic-desc', text: 'Z-A' }
+        { value: 'alphabetic-desc', text: 'Z-A' },
+        { value: 'markets', text: 'Most markets' },
+        { value: 'markets-asc', text: 'Least markets' }
       ]
     }
   },
@@ -168,6 +170,10 @@ export default {
           return sorted.sort((a, b) => a.name.localeCompare(b.name))
         case 'alphabetic-desc':
           return sorted.sort((a, b) => b.name.localeCompare(a.name))
+        case 'markets':
+          return sorted.sort((a, b) => b.markets.length - a.markets.length)
+        case 'markets-asc':
+          return sorted.sort((a, b) => a.markets.length - b.markets.length)
         default:
           return sorted
       }
