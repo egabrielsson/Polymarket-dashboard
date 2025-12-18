@@ -1,8 +1,21 @@
 <template>
-  <!-- Sidebar wraps the whole navigation block -->
-  <aside
-    class="sidebar bg-dark text-white h-100 d-flex flex-column justify-content-start gap-4 p-4"
-  >
+  <!-- Mobile: centered dropdown menu -->
+  <div class="mobile-nav d-md-none">
+    <button class="btn btn-sm btn-dark" @click="isOpen = !isOpen">☰ Menu</button>
+    <div v-if="isOpen" class="mobile-nav__dropdown bg-dark">
+      <RouterLink class="mobile-nav__link" :to="{ name: 'account' }" @click="isOpen = false">My Account</RouterLink>
+      <RouterLink class="mobile-nav__link" :to="{ name: 'browseMarkets' }" @click="isOpen = false">Browse Markets</RouterLink>
+      <RouterLink class="mobile-nav__link" :to="{ name: 'watchlist' }" @click="isOpen = false">Watchlist</RouterLink>
+      <div class="mobile-nav__session">
+        <span v-if="user" class="text-white-50 small">{{ user.username }}</span>
+        <button v-if="user" class="btn btn-sm btn-outline-light" @click="handleLogout">Logout</button>
+        <RouterLink v-else class="btn btn-sm btn-outline-light" :to="{ name: 'login' }" @click="isOpen = false">Login</RouterLink>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop: full sidebar -->
+  <aside class="sidebar bg-dark text-white h-100 d-none d-md-flex flex-column justify-content-start gap-4 p-4">
     <!-- Brand section shows POLY + WATCH with different colors -->
     <div class="sidebar__brand">
       <h1 class="h5 fw-semibold mb-1">
@@ -17,6 +30,7 @@
         class="nav-link sidebar__link text-white text-center text-md-start flex-fill"
         active-class="sidebar__link--active"
         :to="{ name: 'account' }"
+        @click="isOpen = false"
       >
         My Account
       </RouterLink>
@@ -25,6 +39,7 @@
         class="nav-link sidebar__link text-white text-center text-md-start flex-fill"
         active-class="sidebar__link--active"
         :to="{ name: 'browseMarkets' }"
+        @click="isOpen = false"
       >
         Browse Markets
       </RouterLink>
@@ -33,6 +48,7 @@
         class="nav-link sidebar__link text-white text-center text-md-start flex-fill"
         active-class="sidebar__link--active"
         :to="{ name: 'watchlist' }"
+        @click="isOpen = false"
       >
         Watchlist
       </RouterLink>
@@ -61,7 +77,7 @@
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/sessionStore'
 
@@ -70,17 +86,20 @@ export default {
   setup() {
     const router = useRouter()
     const sessionStore = useSessionStore()
+    const isOpen = ref(false)
+
     onMounted(() => {
       sessionStore.refresh()
     })
     const user = computed(() => sessionStore.session.user)
 
     const handleLogout = () => {
+      isOpen.value = false
       sessionStore.clearUser()
       router.push({ name: 'login' })
     }
 
-    return { user, handleLogout }
+    return { user, handleLogout, isOpen }
   }
 }
 </script>
@@ -127,5 +146,46 @@ export default {
 .sidebar__link--active {
   background-color: var(--poly-blue);
   color: #f8fafc;
+}
+
+/* Mobile centered dropdown */
+.mobile-nav {
+  position: fixed;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  text-align: center;
+}
+
+.mobile-nav__dropdown {
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 160px;
+}
+
+.mobile-nav__link {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.mobile-nav__link:hover,
+.mobile-nav__link.router-link-active {
+  background: var(--poly-blue);
+}
+
+.mobile-nav__session {
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 </style>
