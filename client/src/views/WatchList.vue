@@ -507,6 +507,12 @@ export default {
   min-height: calc(100vh - 4rem);
 }
 
+@media (max-width: 767.98px) {
+  .watchlist-view {
+    padding-top: 45px !important;
+  }
+}
+
 .empty-state {
   max-width: 420px;
   margin: 0 auto;

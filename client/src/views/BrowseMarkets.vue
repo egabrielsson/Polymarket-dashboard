@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-4">
+   <b-container fluid class="py-4 browse-markets-view">
     <div
       class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-4"
     >
@@ -263,3 +263,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+@media (max-width: 767.98px) {
+  .browse-markets-view {
+    padding-top: 45px !important;
+  }
+}
+</style>

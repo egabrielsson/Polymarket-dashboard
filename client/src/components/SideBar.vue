@@ -1,7 +1,14 @@
 <template>
-  <!-- Mobile: centered dropdown menu -->
+  <!-- Mobile: full-width top bar -->
   <div class="mobile-nav d-md-none">
-    <button class="btn btn-sm btn-dark" @click="isOpen = !isOpen">☰ Menu</button>
+    <div class="mobile-nav__bar bg-dark d-flex justify-content-between align-items-center px-3 py-2">
+      <span class="mobile-nav__brand text-white fw-semibold">
+        <span>POLY</span><span class="text-primary">WATCH</span>
+      </span>
+      <button class="btn btn-outline-light btn-sm mobile-nav__toggle" @click="isOpen = !isOpen">
+        ☰
+      </button>
+    </div>
     <div v-if="isOpen" class="mobile-nav__dropdown bg-dark">
       <RouterLink class="mobile-nav__link" :to="{ name: 'account' }" @click="isOpen = false">My Account</RouterLink>
       <RouterLink class="mobile-nav__link" :to="{ name: 'browseMarkets' }" @click="isOpen = false">Browse Markets</RouterLink>
@@ -148,24 +155,39 @@ export default {
   color: #f8fafc;
 }
 
-/* Mobile centered dropdown */
+/* Mobile full-width top bar */
 .mobile-nav {
   position: fixed;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1001;
-  text-align: center;
+}
+
+.mobile-nav__bar {
+  width: 100%;
+}
+
+.mobile-nav__brand {
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
+.mobile-nav__toggle {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
 }
 
 .mobile-nav__dropdown {
-  margin-top: 0.5rem;
-  border-radius: 0.5rem;
+  border-radius: 0 0 0.5rem 0.5rem;
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 160px;
 }
 
 .mobile-nav__link {
