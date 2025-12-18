@@ -200,10 +200,11 @@ export default {
       this.saveError = ''
       try {
         if (this.userNote) {
-          await Api.put(
-            `/users/${this.activeUserId}/watchlists/${resolvedId}/note`,
-            { content: this.noteContent.trim() }
-          )
+          // PUT /api/notes/:id
+          await Api.put(`/notes/${this.userNote._id}`, {
+            userId: this.activeUserId,
+            content: this.noteContent.trim()
+          })
         } else {
           await Api.post(`/markets/${resolvedId}/notes`, {
             userId: this.activeUserId,
