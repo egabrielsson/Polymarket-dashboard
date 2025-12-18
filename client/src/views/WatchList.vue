@@ -106,20 +106,26 @@
           Create your first category to start organizing markets.
         </p>
       </div>
-      <div v-else class="category-grid">
-        <CategoryColumn
+      <b-row v-else class="g-4">
+        <b-col
           v-for="category in sortedCategories"
           :key="category._id"
-          :category="category"
-          :markets="category.markets"
-          :all-categories="categoryOptions"
-          :removing-markets="removingMarkets"
-          :deleting-categories="deletingCategories"
-          @update-category="handleAssignCategory"
-          @remove-market="handleRemoveMarket"
-          @delete-category="handleDeleteCategory"
-        />
-      </div>
+          cols="12"
+          lg="6"
+          xl="4"
+        >
+          <CategoryColumn
+            :category="category"
+            :markets="category.markets"
+            :all-categories="categoryOptions"
+            :removing-markets="removingMarkets"
+            :deleting-categories="deletingCategories"
+            @update-category="handleAssignCategory"
+            @remove-market="handleRemoveMarket"
+            @delete-category="handleDeleteCategory"
+          />
+        </b-col>
+      </b-row>
     </div>
   </b-container>
 </template>
@@ -487,12 +493,6 @@ export default {
 .sort-dropdown :deep(.dropdown-item.active) {
   background-color: var(--poly-blue);
   color: #fff;
-}
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr));
-  gap: 1.5rem;
 }
 
 .empty-state {
