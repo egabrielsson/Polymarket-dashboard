@@ -15,8 +15,9 @@
           variant="outline-primary"
           @click="loadData"
           :disabled="loadingCategories"
+          title="Refresh"
         >
-          Refresh
+          &#8635;
         </b-button>
         <b-button
           variant="primary"

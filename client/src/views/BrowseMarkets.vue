@@ -12,8 +12,9 @@
           variant="outline-primary"
           @click="fetchMarkets"
           :disabled="loading"
+          title="Refresh"
         >
-          Refresh
+          &#8635;
         </b-button>
       </div>
     </div>
