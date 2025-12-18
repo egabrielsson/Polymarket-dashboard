@@ -26,24 +26,6 @@
         >
           Create Category
         </b-button>
-        <div class="d-flex align-items-center gap-2 ms-auto">
-          <span class="mb-0 small fw-semibold">Sort by:</span>
-          <b-dropdown
-            :text="currentSortLabel"
-            size="sm"
-            variant="outline-secondary"
-            class="sort-dropdown"
-          >
-            <b-dropdown-item
-              v-for="option in sortOptions"
-              :key="option.value"
-              :active="sortOrder === option.value"
-              @click="sortOrder = option.value"
-            >
-              {{ option.text }}
-            </b-dropdown-item>
-          </b-dropdown>
-        </div>
       </div>
       <div v-if="isAdminUser" class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
@@ -62,6 +44,34 @@
         {{ adminError }}
       </b-alert>
     </div>
+
+    <!-- Category Navigation Bar -->
+    <nav class="navbar bg-body-tertiary rounded mb-4">
+      <div class="container-fluid">
+        <ul class="navbar-nav flex-row flex-wrap gap-2">
+          <li class="nav-item">
+            <a
+              class="nav-link px-3"
+              :class="{ active: !selectedCategoryId }"
+              href="#"
+              @click.prevent="selectCategory(null)"
+            >
+              All
+            </a>
+          </li>
+          <li v-for="cat in categories" :key="cat._id" class="nav-item">
+            <a
+              class="nav-link px-3"
+              :class="{ active: selectedCategoryId === cat._id }"
+              href="#"
+              @click.prevent="selectCategory(cat._id)"
+            >
+              {{ cat.name }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
     <!-- Create Category Modal -->
     <b-modal
@@ -100,42 +110,64 @@
     </div>
     <div v-else-if="loadingCategories">Loading...</div>
     <div v-else>
-      <div v-if="!categories.length" class="empty-state card p-4 text-center">
-        <p class="mb-1 fw-semibold">No categories yet</p>
-        <p class="mb-0">
-          Create your first category to start organizing markets.
+      <div v-if="!filteredMarkets.length" class="empty-state card p-4 text-center">
+        <p class="mb-1 fw-semibold">
+          {{ selectedCategoryId ? 'No markets in this category' : 'No saved markets yet' }}
         </p>
+        <p class="mb-0">Browse markets and add them to your watchlist</p>
       </div>
-      <div v-else class="categories-container">
-        <b-row class="g-4">
-          <b-col
-            v-for="category in sortedCategories"
-            :key="category._id"
-            cols="12"
-            lg="6"
-            xl="4"
-          >
-            <CategoryColumn
-              :category="category"
-              :markets="category.markets"
-              :all-categories="categoryOptions"
-              :removing-markets="removingMarkets"
-              :deleting-categories="deletingCategories"
-              :is-expanded="expandedCategoryId === category._id"
-              @update-category="handleAssignCategory"
-              @remove-market="handleRemoveMarket"
-              @delete-category="handleDeleteCategory"
-              @toggle-expand="handleToggleExpand"
-            />
-          </b-col>
-        </b-row>
-      </div>
+      <b-row v-else class="g-4">
+        <b-col
+          v-for="market in filteredMarkets"
+          :key="market._id"
+          cols="12"
+          md="6"
+          lg="4"
+          xl="3"
+        >
+          <div class="watchlist-market-card">
+            <MarketCard :market="market">
+              <template #actions>
+                <div class="watchlist-market-actions">
+                  <select
+                    class="form-select form-select-sm"
+                    :value="getMarketCategoryId(market)"
+                    @change="handleAssignCategory({ marketId: market._id, fromCategoryId: getMarketCategoryId(market), categoryId: $event.target.value })"
+                  >
+                    <option value="">Uncategorized</option>
+                    <option
+                      v-for="cat in categoryOptions"
+                      :key="cat._id"
+                      :value="cat._id"
+                    >
+                      {{ cat.name }}
+                    </option>
+                  </select>
+                  <MarketNotesModal
+                    :market-id="market._id"
+                    :market-title="market.title"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    @click="handleRemoveMarket(market._id)"
+                    :disabled="removingMarkets[market._id]"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </template>
+            </MarketCard>
+          </div>
+        </b-col>
+      </b-row>
     </div>
   </b-container>
 </template>
 
 <script>
-import CategoryColumn from '@/components/CategoryColumn.vue'
+import MarketCard from '@/components/MarketCard.vue'
+import MarketNotesModal from '@/components/MarketNotesModal.vue'
 import { Api } from '@/Api'
 import { useSessionStore } from '@/stores/sessionStore'
 
@@ -144,7 +176,8 @@ const sessionStore = useSessionStore()
 export default {
   name: 'WatchListView',
   components: {
-    CategoryColumn
+    MarketCard,
+    MarketNotesModal
   },
   data() {
     return {
@@ -159,14 +192,7 @@ export default {
       adminSuccess: '',
       showCreateCategoryModal: false,
       newCategoryName: '',
-      sortOrder: 'alphabetic',
-      sortOptions: [
-        { value: 'alphabetic', text: 'A-Z' },
-        { value: 'alphabetic-desc', text: 'Z-A' },
-        { value: 'markets', text: 'Most markets' },
-        { value: 'markets-asc', text: 'Least markets' }
-      ],
-      expandedCategoryId: null
+      selectedCategoryId: null
     }
   },
   computed: {
@@ -178,41 +204,33 @@ export default {
       return username.toUpperCase().includes('ADMIN')
     },
     categoryOptions() {
-      return this.categories.map(({ _id, name }) => ({
+      return this.categories.filter(c => c._id !== 'uncategorized').map(({ _id, name }) => ({
         _id,
         name
       }))
     },
-    currentSortLabel() {
-      const option = this.sortOptions.find((o) => o.value === this.sortOrder)
-      return option ? option.text : 'Sort'
+    allMarkets() {
+      return this.categories.flatMap(cat => cat.markets)
     },
-    sortedCategories() {
-      const sorted = [...this.categories]
-      switch (this.sortOrder) {
-        case 'alphabetic':
-          return sorted.sort((a, b) => a.name.localeCompare(b.name))
-        case 'alphabetic-desc':
-          return sorted.sort((a, b) => b.name.localeCompare(a.name))
-        case 'markets':
-          return sorted.sort((a, b) => b.markets.length - a.markets.length)
-        case 'markets-asc':
-          return sorted.sort((a, b) => a.markets.length - b.markets.length)
-        default:
-          return sorted
-      }
+    filteredMarkets() {
+      if (!this.selectedCategoryId) return this.allMarkets
+      const cat = this.categories.find(c => c._id === this.selectedCategoryId)
+      return cat ? cat.markets : []
     }
   },
   created() {
     this.loadData()
   },
   methods: {
-    handleToggleExpand(categoryId) {
-      if (this.expandedCategoryId === categoryId) {
-        this.expandedCategoryId = null
-      } else {
-        this.expandedCategoryId = categoryId
+    selectCategory(catId) {
+      this.selectedCategoryId = catId
+    },
+    getMarketCategoryId(market) {
+      const rawId = market.categoryId || ''
+      if (typeof rawId === 'object') {
+        return rawId?._id || rawId?.$oid || ''
       }
+      return rawId === 'uncategorized' ? '' : rawId
     },
     async loadData() {
       this.loadingCategories = true
@@ -487,25 +505,6 @@ export default {
 <style scoped>
 .watchlist-view {
   min-height: calc(100vh - 4rem);
-  padding-bottom: 450px;
-}
-
-.sort-dropdown :deep(.btn) {
-  background-color: #fff;
-  color: #1f2933;
-}
-
-.sort-dropdown :deep(.dropdown-menu) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.sort-dropdown :deep(.dropdown-item) {
-  color: #1f2933;
-}
-
-.sort-dropdown :deep(.dropdown-item.active) {
-  background-color: var(--poly-blue);
-  color: #fff;
 }
 
 .empty-state {
@@ -513,9 +512,24 @@ export default {
   margin: 0 auto;
 }
 
-.categories-container {
-  height: calc(100vh - 250px);
-  overflow-y: auto;
-  padding-bottom: 450px;
+.watchlist-market-card {
+  height: 100%;
+}
+
+.watchlist-market-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid #eee;
+}
+
+.watchlist-market-actions .form-select {
+  max-width: 140px;
+}
+
+.nav-link.active {
+  font-weight: 600;
+  color: var(--poly-blue) !important;
 }
 </style>
