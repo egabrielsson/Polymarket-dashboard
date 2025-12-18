@@ -4,8 +4,8 @@
       <div>
         <h1 class="h4 fw-semibold mb-1">My Account</h1>
       </div>
-      <b-button variant="outline-secondary" size="sm" @click="refresh">
-        Refresh
+      <b-button variant="outline-secondary" size="sm" @click="refresh" title="Refresh">
+        &#8635;
       </b-button>
     </div>
 

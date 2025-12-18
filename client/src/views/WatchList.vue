@@ -27,7 +27,7 @@
           Create Category
         </b-button>
         <div class="d-flex align-items-center gap-2 ms-auto">
-          <label for="sort-select" class="mb-0 small text-muted">Sort by:</label>
+          <label for="sort-select" class="mb-0 small">Sort by:</label>
           <b-form-select
             id="sort-select"
             v-model="sortOrder"
