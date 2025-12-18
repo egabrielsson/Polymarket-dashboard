@@ -106,26 +106,30 @@
           Create your first category to start organizing markets.
         </p>
       </div>
-      <b-row v-else class="g-4">
-        <b-col
-          v-for="category in sortedCategories"
-          :key="category._id"
-          cols="12"
-          lg="6"
-          xl="4"
-        >
-          <CategoryColumn
-            :category="category"
-            :markets="category.markets"
-            :all-categories="categoryOptions"
-            :removing-markets="removingMarkets"
-            :deleting-categories="deletingCategories"
-            @update-category="handleAssignCategory"
-            @remove-market="handleRemoveMarket"
-            @delete-category="handleDeleteCategory"
-          />
-        </b-col>
-      </b-row>
+      <div v-else class="categories-container">
+        <b-row class="g-4">
+          <b-col
+            v-for="category in sortedCategories"
+            :key="category._id"
+            cols="12"
+            lg="6"
+            xl="4"
+          >
+            <CategoryColumn
+              :category="category"
+              :markets="category.markets"
+              :all-categories="categoryOptions"
+              :removing-markets="removingMarkets"
+              :deleting-categories="deletingCategories"
+              :is-expanded="expandedCategoryId === category._id"
+              @update-category="handleAssignCategory"
+              @remove-market="handleRemoveMarket"
+              @delete-category="handleDeleteCategory"
+              @toggle-expand="handleToggleExpand"
+            />
+          </b-col>
+        </b-row>
+      </div>
     </div>
   </b-container>
 </template>
@@ -161,7 +165,8 @@ export default {
         { value: 'alphabetic-desc', text: 'Z-A' },
         { value: 'markets', text: 'Most markets' },
         { value: 'markets-asc', text: 'Least markets' }
-      ]
+      ],
+      expandedCategoryId: null
     }
   },
   computed: {
@@ -202,6 +207,13 @@ export default {
     this.loadData()
   },
   methods: {
+    handleToggleExpand(categoryId) {
+      if (this.expandedCategoryId === categoryId) {
+        this.expandedCategoryId = null
+      } else {
+        this.expandedCategoryId = categoryId
+      }
+    },
     async loadData() {
       this.loadingCategories = true
       this.categoryError = ''
@@ -475,6 +487,7 @@ export default {
 <style scoped>
 .watchlist-view {
   min-height: calc(100vh - 4rem);
+  padding-bottom: 450px;
 }
 
 .sort-dropdown :deep(.btn) {
@@ -498,5 +511,11 @@ export default {
 .empty-state {
   max-width: 420px;
   margin: 0 auto;
+}
+
+.categories-container {
+  height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding-bottom: 450px;
 }
 </style>

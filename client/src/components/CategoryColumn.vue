@@ -1,5 +1,5 @@
 <template>
-  <article class="category-column card shadow-sm">
+  <article class="category-column card shadow-sm" ref="categoryCard">
     <header
       class="card-header d-flex justify-content-between align-items-center category-header"
       @click="toggleExpanded"
@@ -21,7 +21,7 @@
         </button>
       </div>
     </header>
-    <div v-show="isExpanded" class="card-body">
+    <div v-show="isExpanded" class="card-body category-content">
       <div v-if="markets.length" class="watchlist-market-grid">
         <div
           v-for="market in markets"
@@ -99,14 +99,9 @@ export default {
       type: Object,
       default: () => ({})
     },
-    startExpanded: {
+    isExpanded: {
       type: Boolean,
       default: false
-    }
-  },
-  data() {
-    return {
-      isExpanded: this.startExpanded
     }
   },
   computed: {
@@ -148,7 +143,16 @@ export default {
       this.$emit('delete-category', this.category._id)
     },
     toggleExpanded() {
-      this.isExpanded = !this.isExpanded
+      this.$emit('toggle-expand', this.category._id)
+    }
+  },
+  watch: {
+    isExpanded(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.$refs.categoryCard?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
+      }
     }
   }
 }
@@ -158,6 +162,7 @@ export default {
 .category-column {
   min-width: 0;
   width: 100%;
+  position: relative;
 }
 
 .category-header {
@@ -167,6 +172,21 @@ export default {
 
 .category-header:hover {
   background-color: rgba(0, 0, 0, 0.03);
+}
+
+.category-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-top: none;
+  border-radius: 0 0 0.375rem 0.375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
 }
 
 .expand-icon {
