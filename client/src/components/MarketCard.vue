@@ -85,7 +85,8 @@ export default {
 
 <style scoped>
 .market-card {
-  min-width: 260px;
+  min-width: 0;
+  width: 100%;
 }
 
 .market-logo {
@@ -95,6 +96,15 @@ export default {
   object-fit: cover;
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* Smaller logo on mobile */
+@media (max-width: 575.98px) {
+  .market-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+  }
 }
 
 .outcome-chip {
@@ -109,6 +119,14 @@ export default {
   color: #fff;
 }
 
+/* Smaller chips on mobile */
+@media (max-width: 575.98px) {
+  .outcome-chip {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
 .chip-yes {
   background-color: #198754;
 }
@@ -116,6 +134,7 @@ export default {
 .chip-no {
   background-color: #dc3545;
 }
+
 .market-card-actions {
   padding: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.05);

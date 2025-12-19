@@ -1,8 +1,12 @@
 <template>
-  <article class="category-column card h-100 shadow-sm">
-    <header class="card-header d-flex justify-content-between align-items-center">
-      <div>
-        <p class="text-uppercase fw-semibold small mb-1">Category</p>
+  <article class="category-column card shadow-sm" ref="categoryCard">
+    <header
+      class="card-header d-flex justify-content-between align-items-center category-header"
+      @click="toggleExpanded"
+      role="button"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <span class="expand-icon" :class="{ expanded: isExpanded }">&#9654;</span>
         <h2 class="h5 mb-0">{{ category.name }}</h2>
       </div>
       <div class="d-flex align-items-center gap-2">
@@ -10,14 +14,14 @@
         <button
           type="button"
           class="btn btn-outline-danger btn-sm"
-          @click="emitDelete"
+          @click.stop="emitDelete"
           :disabled="isDeleting()"
         >
           Delete
         </button>
       </div>
     </header>
-    <div class="card-body">
+    <div v-show="isExpanded" class="card-body category-content">
       <div v-if="markets.length" class="watchlist-market-grid">
         <div
           v-for="market in markets"
@@ -94,6 +98,10 @@ export default {
     deletingCategories: {
       type: Object,
       default: () => ({})
+    },
+    isExpanded: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -133,6 +141,18 @@ export default {
     },
     emitDelete() {
       this.$emit('delete-category', this.category._id)
+    },
+    toggleExpanded() {
+      this.$emit('toggle-expand', this.category._id)
+    }
+  },
+  watch: {
+    isExpanded(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.$refs.categoryCard?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
+      }
     }
   }
 }
@@ -140,12 +160,49 @@ export default {
 
 <style scoped>
 .category-column {
-  min-width: 280px;
+  min-width: 0;
+  width: 100%;
+  position: relative;
+}
+
+.category-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.category-header:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.category-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-top: none;
+  border-radius: 0 0 0.375rem 0.375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.expand-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+  color: #1f2933;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
 }
 
 .watchlist-market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 1rem;
 }
 
