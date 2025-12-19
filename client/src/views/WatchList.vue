@@ -5,45 +5,35 @@
     >
       <div>
         <h1 class="display-6 fw-semibold mb-0">Watchlist</h1>
-        <p class="text-muted mb-0">Organize your saved markets by category</p>
+        <p class="mb-0">Organize your saved markets by category</p>
       </div>
     </div>
 
     <div class="mb-3 d-flex flex-column gap-2">
-      <div class="d-flex flex-wrap gap-2">
+      <div class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
-          variant="outline-secondary"
+          variant="outline-primary"
           @click="loadData"
           :disabled="loadingCategories"
+          title="Refresh"
         >
-          Refresh
+          &#8635;
         </b-button>
         <b-button
           variant="primary"
           @click="handleCreateCategory"
           :disabled="creatingCategory"
         >
-          <span
-            v-if="creatingCategory"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          />
           Create Category
         </b-button>
-        <b-form-select
-          v-model="volumeFilter"
-          size="sm"
-          class="w-auto"
-          :options="volumeFilterOptions"
-          title="Filter by 24h volume"
-        />
-        <b-form-select
-          v-model="volumeSort"
-          size="sm"
-          class="w-auto"
-          :options="volumeSortOptions"
-          title="Sort by 24h volume"
-        />
+        <b-button
+          v-if="selectedCategoryId && selectedCategoryId !== 'uncategorized'"
+          variant="outline-danger"
+          @click="handleDeleteCategory(selectedCategoryId)"
+          :disabled="deletingCategories[selectedCategoryId]"
+        >
+          Delete Category
+        </b-button>
       </div>
       <div v-if="isAdminUser" class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
@@ -52,11 +42,6 @@
           :disabled="deletingCollection"
           @click="handleDeleteMarketsCollection"
         >
-          <span
-            v-if="deletingCollection"
-            class="spinner-border spinner-border-sm me-2"
-            role="status"
-          />
           Delete markets collection
         </b-button>
       </div>
@@ -68,6 +53,62 @@
       </b-alert>
     </div>
 
+    <!-- Category Navigation Bar -->
+    <nav class="navbar bg-body-tertiary rounded mb-4">
+      <div class="container-fluid">
+        <ul class="navbar-nav flex-row flex-wrap gap-2">
+          <li class="nav-item">
+            <a
+              class="nav-link px-3"
+              :class="{ active: !selectedCategoryId }"
+              href="#"
+              @click.prevent="selectCategory(null)"
+            >
+              All
+            </a>
+          </li>
+          <li v-for="cat in categories" :key="cat._id" class="nav-item">
+            <a
+              class="nav-link px-3"
+              :class="{ active: selectedCategoryId === cat._id }"
+              href="#"
+              @click.prevent="selectCategory(cat._id)"
+            >
+              {{ cat.name }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Create Category Modal -->
+    <b-modal
+      v-model="showCreateCategoryModal"
+      title="Create Category"
+      size="sm"
+      @hide="newCategoryName = ''"
+    >
+      <b-form-input
+        v-model="newCategoryName"
+        placeholder="Category name"
+        autofocus
+        @keyup.enter="confirmCreateCategory"
+      />
+      <template #footer>
+        <b-button variant="outline-secondary" size="sm" @click="showCreateCategoryModal = false">
+          Cancel
+        </b-button>
+        <b-button
+          variant="primary"
+          size="sm"
+          :disabled="!newCategoryName.trim() || creatingCategory"
+          @click="confirmCreateCategory"
+        >
+          Create
+        </b-button>
+      </template>
+    </b-modal>
+
     <b-alert v-if="!activeUserId" variant="warning" show class="mb-4">
       Please log in to view your watchlist.
     </b-alert>
@@ -75,38 +116,67 @@
     <div v-if="categoryError" class="alert alert-danger" role="alert">
       {{ categoryError }}
     </div>
-    <div v-else-if="loadingCategories" class="text-muted">
-      Loading categories…
-    </div>
+    <div v-else-if="loadingCategories">Loading...</div>
     <div v-else>
-      <div v-if="!categories.length" class="empty-state card p-4 text-center">
-        <p class="mb-1 fw-semibold">No categories yet</p>
-        <p class="text-muted mb-0">
-          Create your first category to start organizing markets.
+      <div v-if="!filteredMarkets.length" class="empty-state card p-4 text-center">
+        <p class="mb-1 fw-semibold">
+          {{ selectedCategoryId ? 'No markets in this category' : 'No saved markets yet' }}
         </p>
+        <p class="mb-0">Browse markets and add them to your watchlist</p>
       </div>
-      <div v-else class="category-grid">
-        <CategoryColumn
-          v-for="category in filteredCategories"
-          :key="category._id"
-          :category="category"
-          :markets="category.markets"
-          :all-categories="categoryOptions"
-          :removing-markets="removingMarkets"
-          :deleting-categories="deletingCategories"
-          @update-category="handleAssignCategory"
-          @remove-market="handleRemoveMarket"
-          @delete-category="handleDeleteCategory"
-        />
-      </div>
+      <b-row v-else class="g-4">
+        <b-col
+          v-for="market in filteredMarkets"
+          :key="market._id"
+          cols="12"
+          md="6"
+          lg="4"
+          xl="3"
+        >
+          <div class="watchlist-market-card">
+            <MarketCard :market="market">
+              <template #actions>
+                <div class="watchlist-market-actions">
+                  <select
+                    class="form-select form-select-sm"
+                    :value="getMarketCategoryId(market)"
+                    @change="handleAssignCategory({ marketId: market._id, fromCategoryId: getMarketCategoryId(market), categoryId: $event.target.value })"
+                  >
+                    <option value="">Uncategorized</option>
+                    <option
+                      v-for="cat in categoryOptions"
+                      :key="cat._id"
+                      :value="cat._id"
+                    >
+                      {{ cat.name }}
+                    </option>
+                  </select>
+                  <MarketNotesModal
+                    :market-id="market._id"
+                    :market-title="market.title"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    @click="handleRemoveMarket(market._id)"
+                    :disabled="removingMarkets[market._id]"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </template>
+            </MarketCard>
+          </div>
+        </b-col>
+      </b-row>
     </div>
   </b-container>
 </template>
 
 <script>
-import CategoryColumn from '@/components/CategoryColumn.vue'
+import MarketCard from '@/components/MarketCard.vue'
+import MarketNotesModal from '@/components/MarketNotesModal.vue'
 import { Api } from '@/Api'
-import { loadWatchlistMarketDetails } from '@/utils/watchlistHelper'
 import { useSessionStore } from '@/stores/sessionStore'
 
 const sessionStore = useSessionStore()
@@ -114,7 +184,8 @@ const sessionStore = useSessionStore()
 export default {
   name: 'WatchListView',
   components: {
-    CategoryColumn
+    MarketCard,
+    MarketNotesModal
   },
   data() {
     return {
@@ -127,8 +198,9 @@ export default {
       deletingCollection: false,
       adminError: '',
       adminSuccess: '',
-      volumeFilter: 'all',
-      volumeSort: 'desc'
+      showCreateCategoryModal: false,
+      newCategoryName: '',
+      selectedCategoryId: null
     }
   },
   computed: {
@@ -140,78 +212,33 @@ export default {
       return username.toUpperCase().includes('ADMIN')
     },
     categoryOptions() {
-      return this.categories.map(({ _id, name }) => ({
+      return this.categories.filter(c => c._id !== 'uncategorized').map(({ _id, name }) => ({
         _id,
         name
       }))
     },
-    volumeFilterOptions() {
-      return [
-        { value: 'all', text: 'Volume: All' },
-        { value: 'high100', text: 'Volume ≥ 100k' },
-        { value: 'high250', text: 'Volume ≥ 250k' },
-        { value: 'high500', text: 'Volume ≥ 500k' },
-        { value: 'high1m', text: 'Volume ≥ 1M' },
-        { value: 'low100', text: 'Volume < 100k' }
-      ]
+    allMarkets() {
+      return this.categories.flatMap(cat => cat.markets)
     },
-    volumeSortOptions() {
-      return [
-        { value: 'desc', text: 'Volume: High → Low' },
-        { value: 'asc', text: 'Volume: Low → High' }
-      ]
-    },
-    filteredCategories() {
-      return this.categories.map((category) => {
-        const filteredMarkets = category.markets
-          .filter((market) => this.passesVolumeFilter(market))
-          .sort((a, b) => this.compareVolume(a, b))
-        return { ...category, markets: filteredMarkets }
-      })
+    filteredMarkets() {
+      if (!this.selectedCategoryId) return this.allMarkets
+      const cat = this.categories.find(c => c._id === this.selectedCategoryId)
+      return cat ? cat.markets : []
     }
   },
   created() {
     this.loadData()
   },
   methods: {
-    getVolumeValue(market) {
-      const rawVolume =
-        market.volume ||
-        market.volume24hr ||
-        market.volumeNum ||
-        market.volumeClob ||
-        0
-      const numeric = Number(rawVolume)
-      return Number.isFinite(numeric) ? numeric : 0
+    selectCategory(catId) {
+      this.selectedCategoryId = catId
     },
-    passesVolumeFilter(market) {
-      const volume = this.getVolumeValue(market)
-      const thresholds = {
-        high100: 100000,
-        high250: 250000,
-        high500: 500000,
-        high1m: 1000000,
-        low100: 100000
+    getMarketCategoryId(market) {
+      const rawId = market.categoryId || ''
+      if (typeof rawId === 'object') {
+        return rawId?._id || rawId?.$oid || ''
       }
-
-      if (this.volumeFilter === 'all') {
-        return true
-      }
-
-      if (this.volumeFilter === 'low100') {
-        return volume < thresholds.low100
-      }
-
-      const min = thresholds[this.volumeFilter] || 0
-      return volume >= min
-    },
-    compareVolume(a, b) {
-      const volA = this.getVolumeValue(a)
-      const volB = this.getVolumeValue(b)
-      if (this.volumeSort === 'asc') {
-        return volA - volB
-      }
-      return volB - volA
+      return rawId === 'uncategorized' ? '' : rawId
     },
     async loadData() {
       this.loadingCategories = true
@@ -221,11 +248,7 @@ export default {
           this.fetchCategories(),
           this.fetchWatchlist()
         ])
-        const watchlistWithDetails = await loadWatchlistMarketDetails(watchlist)
-        this.categories = this.combineCategoriesWithMarkets(
-          categories,
-          watchlistWithDetails
-        )
+        this.categories = this.combineCategoriesWithMarkets(categories, watchlist)
       } catch (err) {
         console.error('Failed to load watchlist data', err)
         this.categoryError =
@@ -305,19 +328,18 @@ export default {
         this.deletingCollection = false
       }
     },
-    async handleCreateCategory() {
-      const name = window.prompt('Name your new category')
+    handleCreateCategory() {
+      this.showCreateCategoryModal = true
+    },
+    async confirmCreateCategory() {
+      const name = this.newCategoryName.trim()
       if (!name) {
         return
       }
       this.creatingCategory = true
       try {
-        const trimmedName = name.trim()
-        if (!trimmedName) {
-          return
-        }
         const payload = {
-          name: trimmedName,
+          name,
           userId: this.activeUserId || null
         }
         const { data } = await Api.post('/categories', payload)
@@ -329,6 +351,8 @@ export default {
             markets: []
           }
         ]
+        this.showCreateCategoryModal = false
+        this.newCategoryName = ''
       } catch (err) {
         console.error('Failed to create category', err)
         this.categoryError =
@@ -339,9 +363,13 @@ export default {
     },
     async handleAssignCategory({ marketId, fromCategoryId, categoryId }) {
       try {
-        await Api.patch(`/markets/${marketId}`, {
-          categoryId: categoryId || null
-        })
+        // Update category in user's watchlist (not the shared market)
+        await Api.patch(
+          `/users/${this.activeUserId}/watchlists/${marketId}/category`,
+          {
+            categoryId: categoryId || null
+          }
+        )
         this.categories = this.moveMarketLocally(
           marketId,
           fromCategoryId,
@@ -437,23 +465,16 @@ export default {
         return
       }
 
-      // Confirm deletion
-      const confirmMessage =
-        category.markets.length > 0
-          ? `Delete "${category.name}"? ${category.markets.length} market(s) will be moved to Uncategorized.`
-          : `Delete "${category.name}"?`
-
-      if (!window.confirm(confirmMessage)) {
-        return
-      }
-
       this.deletingCategories[categoryId] = true
       this.categoryError = ''
 
       try {
         // Move all markets in this category to uncategorized (null categoryId)
         const movePromises = category.markets.map((market) =>
-          Api.patch(`/markets/${market._id}`, { categoryId: null })
+          Api.patch(
+            `/users/${this.activeUserId}/watchlists/${market._id}/category`,
+            { categoryId: null }
+          )
         )
         await Promise.all(movePromises)
 
@@ -462,14 +483,14 @@ export default {
           data: { userId: this.activeUserId }
         })
 
+        // Reset to All view
+        this.selectedCategoryId = null
+
         // Reload data to refresh the view
         await this.loadData()
       } catch (err) {
         console.error('Failed to delete category', err)
-        this.categoryError =
-          err?.response?.data?.error ||
-          err.message ||
-          'Unable to delete category right now.'
+        this.categoryError = err?.response?.data?.error || err.message || 'Unable to delete category right now.'
         await this.loadData()
       } finally {
         this.deletingCategories[categoryId] = false
@@ -484,14 +505,35 @@ export default {
   min-height: calc(100vh - 4rem);
 }
 
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+@media (max-width: 767.98px) {
+  .watchlist-view {
+    padding-top: 45px !important;
+  }
 }
 
 .empty-state {
   max-width: 420px;
   margin: 0 auto;
+}
+
+.watchlist-market-card {
+  height: 100%;
+}
+
+.watchlist-market-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid #eee;
+}
+
+.watchlist-market-actions .form-select {
+  max-width: 140px;
+}
+
+.nav-link.active {
+  font-weight: 600;
+  color: var(--poly-blue) !important;
 }
 </style>

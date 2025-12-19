@@ -14,7 +14,7 @@
         <h3 class="card-title h5 mb-0">{{ market.title }}</h3>
       </div>
       <!-- formatting helpers keep this template short -->
-      <p class="text-muted mb-2">Closes: {{ formattedEndDate }}</p>
+      <p class="mb-2">Closes: {{ formattedEndDate }}</p>
       <p class="fw-semibold mb-3">24h Volume: {{ formattedVolume }}</p>
       <ul class="list-group list-group-flush">
         <!-- outcomes chips, so we can show Yes/No -->
@@ -85,7 +85,8 @@ export default {
 
 <style scoped>
 .market-card {
-  min-width: 260px;
+  min-width: 0;
+  width: 100%;
 }
 
 .market-logo {
@@ -97,32 +98,54 @@ export default {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
+/* Smaller logo on mobile */
+@media (max-width: 575.98px) {
+  .market-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+  }
+}
+
 .outcome-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
+  padding: 0.3rem 1.25rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
+  color: #fff;
+}
+
+/* Smaller chips on mobile */
+@media (max-width: 575.98px) {
+  .outcome-chip {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
 }
 
 .chip-yes {
-  background-color: rgba(46, 204, 113, 0.15);
-  color: #2ecc71;
+  background-color: #198754;
 }
 
 .chip-no {
-  background-color: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
+  background-color: #dc3545;
 }
+
 .market-card-actions {
-  padding-top: 1rem;
+  padding: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  justify-content: stretch;
+  gap: 0;
   flex-wrap: wrap;
+}
+
+.market-card-actions :deep(.btn) {
+  width: 100%;
+  border-radius: 0 0 0.375rem 0.375rem;
 }
 </style>

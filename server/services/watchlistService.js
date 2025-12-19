@@ -10,7 +10,6 @@ const User = require('../models/User');
 const Market = require('../models/Market');
 const Watchlist = require('../models/Watchlist');
 const { getUserTechCategory } = require('./categoryService');
-const { updateMarket } = require('./marketService');
 
 
 /**
@@ -114,20 +113,21 @@ async removeFromWatchlist(userId, marketId){
    
 /** 
  * Function to get a user's watchlist
- * that checks for user-validation
- * and returs users markets as an array or empty array
+ * Returns markets with their per-user categoryId from the watchlist entry
  */
 async getUserWatchlist(userId){
-    // Resolve external id to internal Mongo id
     const user = await ensureUserExists(userId);
 
-    // Returns users markets for that internal id
     const entries = await Watchlist.find({ userId: user._id })
-    .populate('marketId').sort({ createdAt: -1 })
-    .exec();
+      .populate('marketId')
+      .sort({ createdAt: -1 })
+      .exec();
 
-    return entries.map(e => e.marketId);
-
+    // Return markets with categoryId from watchlist entry (per-user)
+    return entries.map(e => ({
+      ...e.marketId.toObject(),
+      categoryId: e.categoryId // override with user's category
+    }));
 },
 
 /**
@@ -153,39 +153,45 @@ async getWatchlistEntry(userId, marketId) {
 
   /** 
   * Add a market to a user's watchlist.
-  * Prevents duplicates, creates entry, and returns populated market list.
-  * Using userId and marketId to connect the market
-  * to the personilized watchist. 
-  * Automatically assigns the market to the user's "Tech" category if not already categorized.
+  * Assigns to user's Tech category by default.
   */
   async addToWatchlist(userId, marketId) {
-
-    // validates ID's and that they exists
     const user = await ensureUserExists(userId); 
-    const market = await ensureMarketExists(marketId);
-    // Makes sure there is no duplicate relationship
+    await ensureMarketExists(marketId);
     await ensureWatchlistNotExists(user._id, marketId);
 
-    // If market doesn't have a categoryId, assign it to user's Tech category
-    if (!market.categoryId) {
-      try {
-        const techCategory = await getUserTechCategory(userId);
-        // Update the market with the Tech category
-        await updateMarket(marketId, { categoryId: techCategory._id });
-      } catch (err) {
-        // Log error but don't fail watchlist addition if category assignment fails
-        console.error('Failed to assign Tech category to market:', err);
-      }
+    // Get user's Tech category for default assignment
+    let categoryId = null;
+    try {
+      const techCategory = await getUserTechCategory(userId);
+      categoryId = techCategory._id;
+    } catch (err) {
+      console.error('Failed to get Tech category:', err);
     }
 
-    // Create the watchlist relationship using internal user _id.
-    await Watchlist.create({ userId: user._id, marketId });
+    // Create watchlist entry with user's category
+    await Watchlist.create({ userId: user._id, marketId, categoryId });
 
-    // Return the user's current watchlist as array of populated Market docs.
-    const entries = await Watchlist.find({ userId: user._id })
-    .populate('marketId').sort({ createdAt: -1 })
-    .exec();
+    return this.getUserWatchlist(userId);
+  },
 
-    return entries.map(e => e.marketId);
+  /**
+   * Update the category of a market in user's watchlist
+   */
+  async updateWatchlistCategory(userId, marketId, categoryId) {
+    const user = await ensureUserExists(userId);
+    await ensureMarketExists(marketId);
+
+    const entry = await Watchlist.findOne({ userId: user._id, marketId });
+    if (!entry) {
+      const err = new Error('Watchlist entry not found');
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+
+    entry.categoryId = categoryId || null;
+    await entry.save();
+
+    return entry;
   }
 };

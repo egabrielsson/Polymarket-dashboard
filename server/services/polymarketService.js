@@ -137,7 +137,7 @@ async function getMarketsByTag(slug, limit = 100) {
     // Step 2: Fetch markets for this tag (with pagination)
     const markets = [];
     let offset = 0;
-    const pageSize = Math.min(limit, 100);
+    const pageSize = 50; // Polymarket API max per page is typically 50
 
     // Loop to fetch markets until we reach the limit set
     while (markets.length < limit) {

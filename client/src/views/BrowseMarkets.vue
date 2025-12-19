@@ -1,40 +1,32 @@
 <template>
-  <b-container fluid class="py-4">
+   <b-container fluid class="py-4 browse-markets-view">
     <div
       class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-4"
     >
       <div>
         <h1 class="display-6 fw-semibold mb-0">Browse Markets</h1>
-        <p class="text-muted mb-0">Live markets fetched from Polymarket</p>
+        <p class="mb-0">Live markets fetched from Polymarket</p>
       </div>
       <div class="d-flex gap-2">
-        <b-button
-          variant="outline-secondary"
-          @click="$router.push({ name: 'home' })"
-        >
-          Home
-        </b-button>
         <b-button
           variant="outline-primary"
           @click="fetchMarkets"
           :disabled="loading"
+          title="Refresh"
         >
-          Refresh
+          &#8635;
         </b-button>
       </div>
     </div>
 
     <b-form class="mb-4" @submit.prevent="applySearch">
-      <b-row class="g-3">
+      <b-row class="g-2 align-items-end">
         <b-col cols="12" md="6" lg="4">
-          <b-form-group label="Search">
-            <b-form-input
-              v-model="searchTerm"
-              placeholder="ex - Zuckerberg, AI, Gabagool..."
-            />
+          <b-form-group label="Search" class="mb-0">
+            <b-form-input v-model="searchTerm" placeholder="" />
           </b-form-group>
         </b-col>
-        <b-col cols="12" md="3" lg="2" class="d-flex align-items-end">
+        <b-col cols="6" md="3" lg="2">
           <b-button
             type="submit"
             variant="primary"
@@ -44,10 +36,10 @@
             Apply
           </b-button>
         </b-col>
-        <b-col cols="12" md="3" lg="2" class="d-flex align-items-end">
+        <b-col cols="6" md="3" lg="2">
           <b-button
             type="button"
-            variant="outline-secondary"
+            variant="outline-primary"
             class="w-100"
             @click="clearSearch"
             :disabled="loading"
@@ -58,10 +50,10 @@
       </b-row>
     </b-form>
 
-    <div v-if="loading" class="text-muted">Loading markets…</div>
+    <div v-if="loading">Loading...</div>
     <div v-else-if="error" class="text-danger">{{ error }}</div>
-    <div v-else-if="filteredMarkets.length === 0" class="text-center py-5">
-      <p class="text-muted mb-0">
+    <div v-else-if="markets.length === 0" class="text-center py-5">
+      <p class="mb-0">
         <span v-if="activeSearchTerm && activeSearchTerm.trim()">
           No markets found matching "{{ activeSearchTerm }}"
         </span>
@@ -71,8 +63,8 @@
     <div v-else>
       <b-row class="g-4 mb-4">
         <b-col
-          v-for="market in displayedMarkets"
-          :key="market.id"
+          v-for="market in markets"
+          :key="market._id"
           cols="12"
           md="6"
           lg="4"
@@ -85,13 +77,8 @@
                 size="sm"
                 class="w-100"
                 @click="addToWatchlist(market)"
-                :disabled="addingToWatchlist[market.id] || !activeUserId"
+                :disabled="addingToWatchlist[market._id] || !activeUserId"
               >
-                <span
-                  v-if="addingToWatchlist[market.id]"
-                  class="spinner-border spinner-border-sm me-2"
-                  role="status"
-                />
                 Add to Watchlist
               </b-button>
             </template>
@@ -99,13 +86,13 @@
         </b-col>
       </b-row>
       <div class="d-flex justify-content-between align-items-center">
-        <div class="text-muted">
+        <div>
           Page {{ currentPage }} of {{ totalPages }}
-          <span v-if="filteredMarkets.length > 0">
+          <span v-if="totalMarkets > 0">
             ({{ (currentPage - 1) * marketsPerPage + 1 }}-{{
-              Math.min(currentPage * marketsPerPage, filteredMarkets.length)
+              Math.min(currentPage * marketsPerPage, totalMarkets)
             }}
-            of {{ filteredMarkets.length }})
+            of {{ totalMarkets }})
           </span>
         </div>
         <div class="d-flex gap-2">
@@ -132,7 +119,6 @@
 <script>
 import MarketCard from '@/components/MarketCard.vue'
 import { Api } from '@/Api'
-import { normalizePolymarketMarket } from '@/utils/marketNormalizer'
 import { useSessionStore } from '@/stores/sessionStore'
 
 const sessionStore = useSessionStore()
@@ -144,137 +130,144 @@ export default {
   },
   data() {
     return {
-      allMarkets: [], // All fetched markets
+      markets: [], // Markets from current query
       loading: false,
       error: '',
       searchTerm: '', // Current input value
-      activeSearchTerm: '', // Search term used for filtering (only updates on Apply)
+      activeSearchTerm: '', // Search term used for backend query
       addingToWatchlist: {},
       currentPage: 1,
       marketsPerPage: 12,
-      presetLimit: 50 // Preset limit for fetching
+      totalMarkets: 0 // Total count from backend for pagination
     }
   },
   computed: {
     activeUserId() {
       return sessionStore.session.user?.id || null
     },
-    filteredMarkets() {
-      // Filter markets based on active search term
-      if (!this.activeSearchTerm || !this.activeSearchTerm.trim()) {
-        return this.allMarkets
-      }
-      const searchLower = this.activeSearchTerm.toLowerCase().trim()
-      return this.allMarkets.filter((market) => {
-        const title = (market.title || '').toLowerCase()
-        return title.includes(searchLower)
-      })
-    },
-    displayedMarkets() {
-      // Get markets for current page
-      const start = (this.currentPage - 1) * this.marketsPerPage
-      const end = start + this.marketsPerPage
-      return this.filteredMarkets.slice(start, end)
-    },
     totalPages() {
-      return Math.ceil(this.filteredMarkets.length / this.marketsPerPage)
+      return Math.ceil(this.totalMarkets / this.marketsPerPage)
     }
   },
   mounted() {
-    this.fetchMarkets()
+    this.syncAndLoad()
   },
   methods: {
-    async fetchMarkets() {
+    // Sync fresh data from Polymarket, then load from MongoDB
+    async syncAndLoad() {
       this.loading = true
       this.error = ''
       try {
-        const params = {
-          limit: this.presetLimit
-        }
-        const { data } = await Api.get('/polymarkets/tech-markets', { params })
-        const marketsPayload = data?.data?.markets || []
-        this.allMarkets = marketsPayload.map(normalizePolymarketMarket)
-        this.currentPage = 1 // Reset to first page when fetching new markets
+        // Step 1: Sync from Polymarket API to MongoDB
+        await Api.get('/polymarkets/tech-markets', { params: { limit: 100 } })
+        // Step 2: Load from MongoDB with pagination
+        await this.loadFromMongo()
       } catch (err) {
-        console.error('Failed to load markets', err)
+        console.error('Failed to sync markets', err)
         this.error = 'Unable to load markets right now.'
       } finally {
         this.loading = false
       }
     },
 
+    // Load markets from MongoDB with backend filtering, sorting, pagination
+    async loadFromMongo() {
+      this.loading = true
+      this.error = ''
+      try {
+        const offset = (this.currentPage - 1) * this.marketsPerPage
+        const params = {
+          limit: this.marketsPerPage,
+          offset,
+          sort: '-volume' // Sort by volume descending (backend sorting)
+        }
+        if (this.activeSearchTerm) {
+          params.search = this.activeSearchTerm // Backend filtering
+        }
+
+        const { data } = await Api.get('/markets', { params })
+        this.markets = (data?.data || []).map((m) => ({
+          ...m,
+          id: m.polymarketId, // For MarketCard compatibility
+          title: m.title
+        }))
+        this.totalMarkets = data?.pagination?.total || 0
+      } catch (err) {
+        console.error('Failed to load markets from MongoDB', err)
+        this.error = 'Unable to load markets right now.'
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchMarkets() {
+      // Refresh: re-sync from Polymarket and reload
+      this.currentPage = 1
+      this.activeSearchTerm = ''
+      this.searchTerm = ''
+      await this.syncAndLoad()
+    },
+
     async addToWatchlist(market) {
       if (!this.activeUserId) {
-        alert('Please log in to add markets to your watchlist.')
         this.$router.push({ name: 'login' })
         return
       }
 
-      this.addingToWatchlist[market.id] = true
+      const marketKey = market.id || market._id
+      this.addingToWatchlist[marketKey] = true
       try {
-        let savedMarketId = null
-
-        // First, try to save the market to database (gets MongoDB _id)
-        try {
-          const { data: marketData } = await Api.post('/markets', {
-            polymarketId: market.id,
-            categoryId: null
-          })
-          savedMarketId = marketData?.data?._id
-        } catch (marketErr) {
-          // If market already exists (409), fetch it by polymarketId
-          if (marketErr?.response?.status === 409) {
-            const { data } = await Api.get('/markets')
-            const markets = data?.data || []
-            const existingMarket = markets.find(
-              (m) => m.polymarketId === market.id
-            )
-            if (existingMarket) {
-              savedMarketId = existingMarket._id
-            } else {
-              throw new Error('Market exists but could not be found')
-            }
-          } else {
-            throw marketErr
-          }
-        }
-
-        // Then add the saved market to watchlist using MongoDB _id
-        await Api.post(`/users/${this.activeUserId}/watchlists`, {
-          marketId: savedMarketId
+        // POST /markets is idempotent - returns existing or creates new
+        const { data: marketData } = await Api.post('/markets', {
+          polymarketId: market.id || market.polymarketId
         })
-        alert(`Added "${market.title}" to your watchlist!`)
+        const marketId = marketData?.data?._id
+
+        await Api.post(`/users/${this.activeUserId}/watchlists`, {
+          marketId
+        })
       } catch (err) {
         console.error('Failed to add to watchlist', err)
-        alert(
-          err?.response?.data?.error ||
-            err.message ||
-            'Failed to add to watchlist. Try again.'
-        )
       } finally {
-        this.addingToWatchlist[market.id] = false
+        this.addingToWatchlist[marketKey] = false
       }
     },
-    applySearch() {
-      // Apply the search term to active filter
+
+    async applySearch() {
+      // Backend filtering: query MongoDB with search term
       this.activeSearchTerm = this.searchTerm
-      this.currentPage = 1 // Reset to first page when searching
+      this.currentPage = 1
+      await this.loadFromMongo()
     },
-    clearSearch() {
+
+    async clearSearch() {
       this.searchTerm = ''
       this.activeSearchTerm = ''
-      this.currentPage = 1 // Reset to first page when clearing search
+      this.currentPage = 1
+      await this.loadFromMongo()
     },
-    nextPage() {
+
+    async nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++
+        await this.loadFromMongo()
       }
     },
-    previousPage() {
+
+    async previousPage() {
       if (this.currentPage > 1) {
         this.currentPage--
+        await this.loadFromMongo()
       }
     }
   }
 }
 </script>
+
+<style scoped>
+@media (max-width: 767.98px) {
+  .browse-markets-view {
+    padding-top: 45px !important;
+  }
+}
+</style>
