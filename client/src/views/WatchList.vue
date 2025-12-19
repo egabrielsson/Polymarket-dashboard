@@ -26,6 +26,14 @@
         >
           Create Category
         </b-button>
+        <b-button
+          v-if="selectedCategoryId && selectedCategoryId !== 'uncategorized'"
+          variant="outline-danger"
+          @click="handleDeleteCategory(selectedCategoryId)"
+          :disabled="deletingCategories[selectedCategoryId]"
+        >
+          Delete Category
+        </b-button>
       </div>
       <div v-if="isAdminUser" class="d-flex flex-wrap gap-2 align-items-center">
         <b-button
@@ -457,16 +465,6 @@ export default {
         return
       }
 
-      // Confirm deletion
-      const confirmMessage =
-        category.markets.length > 0
-          ? `Delete "${category.name}"? ${category.markets.length} market(s) will be moved to Uncategorized.`
-          : `Delete "${category.name}"?`
-
-      if (!window.confirm(confirmMessage)) {
-        return
-      }
-
       this.deletingCategories[categoryId] = true
       this.categoryError = ''
 
@@ -485,14 +483,14 @@ export default {
           data: { userId: this.activeUserId }
         })
 
+        // Reset to All view
+        this.selectedCategoryId = null
+
         // Reload data to refresh the view
         await this.loadData()
       } catch (err) {
         console.error('Failed to delete category', err)
-        this.categoryError =
-          err?.response?.data?.error ||
-          err.message ||
-          'Unable to delete category right now.'
+        this.categoryError = err?.response?.data?.error || err.message || 'Unable to delete category right now.'
         await this.loadData()
       } finally {
         this.deletingCategories[categoryId] = false
