@@ -16,6 +16,12 @@ const WatchlistSchema = new Schema({
     ref: 'Market',
     required: true,
     index: true
+  },
+  categoryId: {
+    // user's category for this market (per-user categorization)
+    type: Schema.Types.ObjectId,
+    ref: 'Category',
+    required: false
   }
 }, { timestamps: true });
 

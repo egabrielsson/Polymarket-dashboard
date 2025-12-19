@@ -17,9 +17,7 @@
       scrollable
       @hide="resetErrors"
     >
-      <div v-if="loadingNotes" class="text-muted text-center py-4">
-        Loading notes…
-      </div>
+      <div v-if="loadingNotes" class="text-center py-4">Loading...</div>
 
       <div v-else>
         <div v-if="loadError" class="alert alert-danger mb-3">
@@ -33,20 +31,20 @@
               :key="note._id || note.id"
               class="list-group-item"
             >
-              <div class="small text-muted mb-1">
+              <div class="small mb-1">
                 {{ formatDate(note.createdAt || note.timestamp) }}
               </div>
               <p class="mb-0 text-break">{{ note.content }}</p>
             </li>
           </ul>
-          <p v-else class="text-muted mb-3">No notes for this market yet.</p>
+          <p v-else class="mb-3">No notes for this market yet.</p>
         </div>
 
         <form class="note-form" @submit.prevent="submitNote">
           <b-form-textarea
             v-model="noteContent"
             :disabled="!activeUserId || savingNote"
-            placeholder="Capture a quick observation..."
+            placeholder="What do you think?"
             rows="3"
             maxlength="100"
           />
@@ -54,9 +52,7 @@
           <div
             class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center mt-2"
           >
-            <small class="text-muted">
-              {{ noteContent.length }}/100 characters
-            </small>
+            <small> {{ noteContent.length }}/100 characters </small>
             <div class="d-flex gap-2 ms-sm-auto">
               <b-button
                 variant="outline-secondary"
@@ -71,19 +67,14 @@
                 size="sm"
                 :disabled="!canSubmit || savingNote"
               >
-                <span
-                  v-if="savingNote"
-                  class="spinner-border spinner-border-sm me-2"
-                  role="status"
-                ></span>
-                Save note
+                Save
               </b-button>
             </div>
           </div>
           <div v-if="saveError" class="text-danger small mt-2">
             {{ saveError }}
           </div>
-          <div v-if="!activeUserId" class="text-muted small mt-2">
+          <div v-if="!activeUserId" class="small mt-2">
             Log in to save notes for this market.
           </div>
         </form>
@@ -209,10 +200,11 @@ export default {
       this.saveError = ''
       try {
         if (this.userNote) {
-          await Api.put(
-            `/users/${this.activeUserId}/watchlists/${resolvedId}/note`,
-            { content: this.noteContent.trim() }
-          )
+          // PUT /api/notes/:id
+          await Api.put(`/notes/${this.userNote._id}`, {
+            userId: this.activeUserId,
+            content: this.noteContent.trim()
+          })
         } else {
           await Api.post(`/markets/${resolvedId}/notes`, {
             userId: this.activeUserId,

@@ -7,24 +7,65 @@ const Watchlist = require("../models/Watchlist");
 const { fetchMarketById } = require("./polymarketService");
 
 /**
- * Create and store a new Market with polymarketId reference
- * 1. Fetch market data from Polymarket API to validate polymarketId exists
- * 2. Extract exact title (question) from Polymarket response
- * 3. Check for duplicate polymarketId in MongoDB
- * 4. Create and save Market document with Polymarket's exact title and optional categoryId
- *
- * @param {string} polymarketId - External Polymarket ID to reference
- * @param {string} categoryId - Optional Category reference (ObjectId)
- * @returns {object} created Market document with _id, timestamps
- * @throws {Error} if polymarketId is invalid or duplicate
+ * Find a market by its Polymarket ID
+ * @param {string} polymarketId - External Polymarket ID
+ * @returns {object|null} Market document or null if not found
  */
-async function createMarket(polymarketId, categoryId = null) {
-  // Validate required field
+async function findByPolymarketId(polymarketId) {
+  if (!polymarketId) return null;
+  return await Market.findOne({ polymarketId });
+}
+
+/**
+ * Helper to parse array from Polymarket (may be JSON string or array)
+ */
+function parseArray(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch { return []; }
+  }
+  return [];
+}
+
+/**
+ * Transform raw Polymarket data into Market schema format
+ * Exported so polymarketController can use it for bulk sync
+ */
+function transformPolymarketData(pm) {
+  const labels = parseArray(pm.outcomes);
+  const prices = parseArray(pm.outcomePrices);
+  const outcomes = labels.map((label, i) => ({ label, price: prices[i] || '0' }));
+
+  return {
+    polymarketId: pm.id,
+    title: pm.question || pm.title || 'Untitled',
+    image: pm.image || pm.icon || '',
+    volume: parseFloat(pm.volume || pm.volumeNum || 0) || 0,
+    outcomes,
+    endDate: pm.endDate || pm.endDateIso || null
+  };
+}
+
+/**
+ * Create a new Market by fetching data from Polymarket API
+ * @param {string} polymarketId - External Polymarket ID
+ * @returns {object} Created Market document
+ * @throws {Error} if polymarketId is invalid or market already exists
+ */
+async function createMarket(polymarketId) {
   if (!polymarketId) {
     throw new Error("polymarketId is required");
   }
 
-  // Step 1: Fetch market from Polymarket API to validate and get exact title
+  // Check for duplicate
+  const existing = await Market.findOne({ polymarketId });
+  if (existing) {
+    const err = new Error("Market already exists");
+    err.code = "DUPLICATE";
+    throw err;
+  }
+
+  // Fetch from Polymarket API
   let polymarketData;
   try {
     polymarketData = await fetchMarketById(polymarketId);
@@ -32,23 +73,9 @@ async function createMarket(polymarketId, categoryId = null) {
     throw new Error(`Invalid polymarketId: ${err.message}`);
   }
 
-  // Extract exact title from Polymarket response
-  // Using 'question' field which is the market title/question on Polymarket
-  const title = polymarketData.question;
-
-  // Step 2: Check for duplicate polymarketId in MongoDB
-  // MongoDB unique index on polymarketId will also enforce this,
-  // but we check here to provide a clear 409 error
-  // as per good API design practices.
-  const existing = await Market.findOne({ polymarketId });
-  if (existing) {
-    const err = new Error(`Market with polymarketId already exists`);
-    err.code = 'DUPLICATE';
-    throw err;
-  }
-
-  // Step 3: Create and save Market document with the Polymarket data
-  const market = new Market({ polymarketId, title, categoryId });
+  // Transform and save
+  const marketData = transformPolymarketData(polymarketData);
+  const market = new Market(marketData);
   return await market.save();
 }
 
@@ -151,6 +178,8 @@ async function deleteAllMarkets() {
 
 // Export the service functions
 module.exports = {
+  transformPolymarketData,
+  findByPolymarketId,
   createMarket,
   listMarkets,
   getMarket,
